@@ -181,8 +181,8 @@ export class UserService {
     let url: string;
     let filePath: string;
 
-    const urls = "http://localhost:5173"
-    // const urls = "https://photo-sport.netlify.app"
+    // const urls = "http://localhost:5173"
+    const urls = "https://media-kit1.netlify.app/login"
     
     if (correo == 'register') {
       url = `${urls}/login?token=${token}`;
