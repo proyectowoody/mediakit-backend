@@ -13,10 +13,5 @@ export class RegisterDto {
   @MinLength(6)
   @Transform(({ value }) => value.trim())
   password: string;
-  @IsBoolean()
-  isVerified: boolean;
-  @IsString()
-  @IsIn(['admin', 'client'])
-  role: string;
 }
 

@@ -4,8 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Param,
-  ParseIntPipe,
   Patch,
   Post,
   Request,
@@ -38,6 +36,7 @@ export class UserController {
 
   @Post('email')
   email(@Body() email: EmailDto) {
+    console.log(email); 
     return this.userService.email(email);
   }
 
@@ -49,8 +48,8 @@ export class UserController {
 
   @Patch('tokens')
   @UseGuards(AuthGuard)
-  token(@Request() req, @Body() isVerified: boolean) {
-    return this.userService.token(req.user.email, isVerified);
+  token(@Request() req) {
+    return this.userService.token(req.user.email);
   }
 
 }

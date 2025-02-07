@@ -1,4 +1,4 @@
-CREATE TABLE usermedia (
+CREATE TABLE usermediakit (
     id INT NOT NULL AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     lastName VARCHAR(255) NOT NULL,

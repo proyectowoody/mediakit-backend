@@ -1,15 +1,11 @@
 import {
   BadRequestException,
-  forwardRef,
-  Inject,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RegisterDto } from './dto/registerDto';
-
 import * as bcryptjs from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import * as path from 'path';
@@ -29,13 +25,12 @@ export class UserService {
     private readonly mailerService: MailerService,
   ) {}
 
-  async register({ password, email, name, lastName, isVerified, role }: RegisterDto) {
-
+  async register({ password, email, name, lastName }: RegisterDto) {
     const user = await this.usersRepository.findOneBy({ email });
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
     if (user) {
-      throw new BadRequestException('Correo electrónico ya existe.');
+      throw new BadRequestException('Credenciales inválidas');
     }
 
     if (!emailRegex.test(email)) {
@@ -49,169 +44,123 @@ export class UserService {
       lastName,
       email,
       password: hashedPassword,
-      isVerified,
-      role,
+      isVerified: false,
+      role: 'client',
     });
 
     await this.usersRepository.save(newUser);
 
-    const Usuario = { email, name, password };
-    let correo = 'register';
+    await this.envioEmail({ email }, email, 'register');
 
-    await this.envioEmail(Usuario, email, correo);
-
-    return {
-      message: 'Usuario registrado correctamente.',
-    };
+    return { message: 'Registro exitoso, verifique su correo.' };
   }
 
   async login({ email, password }: LoginDto) {
     const user = await this.usersRepository.findOneBy({ email });
 
-    if (!user) {
-      throw new UnauthorizedException('Correo inválido');
+    if (!user || !(await bcryptjs.compare(password, user.password))) {
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const isPasswordValid = await bcryptjs.compare(password, user.password);
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Contraseña inválido');
+    if (!user.isVerified) {
+      throw new UnauthorizedException('Debe verificar su cuenta.');
     }
 
-    if (user.isVerified == false) {
-      throw new UnauthorizedException('Su cuenta no está verificada');
-    }
+    const payload = { email, role: user.role };
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: '1h',
+      jwtid: `${Date.now()}`, 
+    });
 
-    const payload = { email: user.email, name: user.name };
-
-    const token = await this.jwtService.signAsync(payload);
-    return {
-      token: token,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      id: user.id,
-    };
+    return { token };
   }
 
   async email({ email }: EmailDto) {
     const user = await this.usersRepository.findOneBy({ email });
 
     if (!user) {
-      throw new BadRequestException('Correo electrónico no existe.');
+      throw new BadRequestException('Correo enviado (si existe en la base de datos).');
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
-
-    if (!emailRegex.test(email)) {
-      throw new BadRequestException('Ingrese un correo válido.');
-    }
-
-    let correo = 'verificacion';
-
-    await this.envioEmail(user, email, correo);
-
-    return { message: 'Correo electrónico enviado.' };
+    await this.envioEmail(user, email, 'verificacion');
+ 
+    return;
   }
 
   async password(email: string, passDto: PasswordDto) {
     const user = await this.usersRepository.findOneBy({ email });
 
     if (!user) {
-      throw new UnauthorizedException('Usuario no encontrado');
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
     if (passDto.password !== passDto.verPassword) {
-      throw new UnauthorizedException('Las contraseñas no coinciden');
+      throw new BadRequestException('Las contraseñas no coinciden');
     }
 
     const hashedNewPassword = await bcryptjs.hash(passDto.password, 10);
 
-    await this.usersRepository.update(
-      { email },
-      { password: hashedNewPassword },
-    );
+    await this.usersRepository.update({ email }, { password: hashedNewPassword });
 
-    const payload = { email: user.email, name: user.name };
+    const payload = { email: user.email};
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: '1h',
+      jwtid: `${Date.now()}`, 
+    });
 
-    const token = await this.jwtService.signAsync(payload);
-
-    return {
-      token: token,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      id: user.id,
-      message: 'Contraseña actualizada correctamente',
-    };
+    return { token, message: 'Contraseña actualizada' };
   }
 
-  async token(email: string, isVerified: boolean) {
+  async token(email: string) {
     const user = await this.usersRepository.findOneBy({ email });
 
     if (!user) {
-      throw new UnauthorizedException('Usuario no existe');
+      throw new UnauthorizedException('Credenciales inválidas');
     }
-    isVerified = true;
-    await this.usersRepository.update({ email }, { isVerified: isVerified });
 
-    const payload = { email: user.email, name: user.name };
+    await this.usersRepository.update({ email }, { isVerified: true });
 
-    const token = await this.jwtService.signAsync(payload);
+    const payload = { email };
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: '1h',
+      jwtid: `${Date.now()}`,
+    });
 
-    return {
-      token: token,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      id: user.id,
-    };
+    return { token };
   }
 
   async envioEmail(user: any, email: string, correo: string) {
-    const payload = {
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      id: user.id,
-    };
 
-    const token = await this.jwtService.signAsync(payload);
+    const payload = { email: user.email };
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: '5m',
+      jwtid: `${Date.now()}`,
+    });
 
     let url: string;
     let filePath: string;
 
-    // const urls = "http://localhost:5173"
-    const urls = "https://media-kit1.netlify.app/login"
-    
-    if (correo == 'register') {
-      url = `${urls}/login?token=${token}`;
-      filePath = path.resolve(
-        process.cwd(),
-        'src/user/html/plantillaReg.html',
-      );
-    }
+    const baseUrl = "http://localhost:5173";
+    // const baseUrl = "https://media-kit1.netlify.app";
 
-    if (correo == 'verificacion') {
-      url = `${urls}/password?token=${token}`;
+    if (correo === 'register') {
+      url = `${baseUrl}/login?token=${token}`;
+      filePath = path.resolve(process.cwd(), 'src/user/html/plantillaReg.html');
+    } else if (correo === 'verificacion') {
+      url = `${baseUrl}/password?token=${token}`;
       filePath = path.resolve(process.cwd(), 'src/user/html/plantilla.html');
+    } else {
+      throw new BadRequestException('Tipo de correo no válido');
     }
 
     const htmlTemplate = fs.readFileSync(filePath, 'utf8');
-    const personalizedHtml = htmlTemplate
-      .replace('{{name}}', user.name)
-      .replace('{{token}}', url);
+    const personalizedHtml = htmlTemplate.replace('{{name}}', user.email).replace('{{token}}', url);
 
     await this.mailerService.sendMail({
       to: email,
-      subject: 'Correo de Photo Sport',
+      subject: 'Correo de verificación',
       html: personalizedHtml,
     });
   }
 
-  async findById(id: number): Promise<User> {
-    return await this.usersRepository.findOne({
-      where: { id },
-    });
-  }
 }
