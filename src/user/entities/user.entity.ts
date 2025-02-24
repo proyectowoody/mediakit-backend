@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column} from 'typeorm';
+import { Favorite } from 'src/favorite/entities/favorite.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany} from 'typeorm';
 
 @Entity('usermediakit')
 export class User {
@@ -22,4 +23,8 @@ export class User {
 
   @Column({ type: 'enum', enum: ['admin', 'client'], default: 'client' })
   role: string;
+
+  @OneToMany(() => Favorite, (favorito) => favorito.user)
+  favoritos: Favorite[];
+  
 }

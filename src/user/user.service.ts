@@ -23,7 +23,13 @@ export class UserService {
     private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
     private readonly mailerService: MailerService,
-  ) {}
+  ) { }
+
+  async findByEmail(email: string): Promise<User> {
+    return await this.usersRepository.findOne({
+      where: { email },
+    });
+  }
 
   async register({ password, email, name, lastName }: RegisterDto) {
     const user = await this.usersRepository.findOneBy({ email });
@@ -38,19 +44,21 @@ export class UserService {
     }
 
     const hashedPassword = await bcryptjs.hash(password, 10);
-
+    const role = 'client';
     const newUser = this.usersRepository.create({
       name,
       lastName,
       email,
       password: hashedPassword,
       isVerified: false,
-      role: 'client',
+      role: role,
     });
 
     await this.usersRepository.save(newUser);
 
-    await this.envioEmail({ email }, email, 'register');
+    const Usuario = { email, role };
+
+    await this.envioEmail(Usuario, email, 'register');
 
     return { message: 'Registro exitoso, verifique su correo.' };
   }
@@ -58,18 +66,25 @@ export class UserService {
   async login({ email, password }: LoginDto) {
     const user = await this.usersRepository.findOneBy({ email });
 
-    if (!user || !(await bcryptjs.compare(password, user.password))) {
-      throw new UnauthorizedException('Credenciales inválidas');
+    if (!user) {
+      throw new UnauthorizedException('Correo inválido');
     }
 
-    if (!user.isVerified) {
-      throw new UnauthorizedException('Debe verificar su cuenta.');
+    const isPasswordValid = await bcryptjs.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Contraseña inválido');
     }
 
-    const payload = { email, role: user.role };
+    if (user.isVerified == false) {
+      throw new UnauthorizedException('Su cuenta no está verificada');
+    }
+
+    const payload = { id: user.id, email, user: user.role };
+
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: '1h',
-      jwtid: `${Date.now()}`, 
+      jwtid: `${Date.now()}`,
     });
 
     return { token };
@@ -83,7 +98,7 @@ export class UserService {
     }
 
     await this.envioEmail(user, email, 'verificacion');
- 
+
     return;
   }
 
@@ -102,10 +117,10 @@ export class UserService {
 
     await this.usersRepository.update({ email }, { password: hashedNewPassword });
 
-    const payload = { email: user.email};
+    const payload = { email: user.email, role: user.role };
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: '1h',
-      jwtid: `${Date.now()}`, 
+      jwtid: `${Date.now()}`,
     });
 
     return { token, message: 'Contraseña actualizada' };
@@ -120,7 +135,7 @@ export class UserService {
 
     await this.usersRepository.update({ email }, { isVerified: true });
 
-    const payload = { email };
+    const payload = { email, user: user.role };
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: '1h',
       jwtid: `${Date.now()}`,

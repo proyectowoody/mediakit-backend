@@ -36,7 +36,6 @@ export class UserController {
 
   @Post('email')
   email(@Body() email: EmailDto) {
-    console.log(email); 
     return this.userService.email(email);
   }
 
