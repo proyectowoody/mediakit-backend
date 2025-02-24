@@ -10,7 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const options = new DocumentBuilder()
-    .setTitle('Media kit')
+    .setTitle('respectfull shoes')
     .setDescription(
       'This is the documentation for Media kit.',
     )
