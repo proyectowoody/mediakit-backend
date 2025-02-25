@@ -1,7 +1,7 @@
 DROP TABLE usermediakit;
 DROP TABLE categorymediakit;
 DROP TABLE articlemediakit;
-DROP TABLE favoritosmediakit;
+DROP TABLE favoritemediakit;
 
 CREATE TABLE usermediakit (
     id INT NOT NULL AUTO_INCREMENT,

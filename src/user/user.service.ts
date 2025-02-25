@@ -80,7 +80,7 @@ export class UserService {
       throw new UnauthorizedException('Su cuenta no está verificada');
     }
 
-    const payload = { id: user.id, email, user: user.role };
+    const payload = { email, user: user.role };
 
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: '1h',
