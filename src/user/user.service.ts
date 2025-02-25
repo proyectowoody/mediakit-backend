@@ -154,9 +154,9 @@ export class UserService {
 
     let url: string;
     let filePath: string;
-
-    const baseUrl = "http://localhost:5173";
-    // const baseUrl = "https://media-kit1.netlify.app";
+  
+    // const baseUrl = "http://localhost:5173";
+    const baseUrl = "https://respectful-shoes.netlify.app";
 
     if (correo === 'register') {
       url = `${baseUrl}/login?token=${token}`;
