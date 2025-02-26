@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/user/guard/auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags("Categorías")
 @Controller('categorias')
@@ -12,8 +13,15 @@ export class CategoryController {
 
   @Post()
   @UseGuards(AuthGuard)
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoryService.create(createCategoryDto);
+  @UseInterceptors(FileInterceptor('imagen'))
+  async create(
+    @UploadedFile() imagen: Express.Multer.File,
+    @Body() newCategory: CreateCategoryDto,
+  ) {
+    return await this.categoryService.create({
+      ...newCategory,
+      imagen,
+    });
   }
 
   @Get()
@@ -32,6 +40,16 @@ export class CategoryController {
   @UseGuards(AuthGuard)
   update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
     return this.categoryService.update(+id, updateCategoryDto);
+  }
+
+  @Patch(':id/imagen')
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('imagen'))
+  async updateImagen(
+    @Param('id') id: string,
+    @UploadedFile() imagen: Express.Multer.File,
+  ) {
+    return this.categoryService.updateImagen(id, imagen);
   }
 
   @Delete(':id')

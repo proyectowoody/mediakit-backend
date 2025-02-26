@@ -5,10 +5,11 @@ import { ArticleController } from './article.controller';
 import { ArticleService } from './article.service';
 import { CloudinaryModule } from 'src/cloudinay/cloudinay.module';
 import { CategoryModule } from 'src/category/category.module';
+import { ArticleImage } from './entities/articleImage.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Article]),
+    TypeOrmModule.forFeature([Article, ArticleImage]),
     CloudinaryModule, 
     CategoryModule,
   ],

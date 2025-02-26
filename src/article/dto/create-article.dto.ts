@@ -17,9 +17,9 @@ export class CreateArticleDto {
   precio: number;
 
   @ApiProperty({
-    description: 'Imagen del artículo',
-    type: 'string',
-    format: 'binary',
+    description: 'Imágenes del artículo',
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
   })
-  imagen: Express.Multer.File;
+  imagenes: Express.Multer.File[];
 }

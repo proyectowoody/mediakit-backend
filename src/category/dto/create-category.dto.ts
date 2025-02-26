@@ -5,4 +5,6 @@ export class CreateCategoryDto {
   nombre: string;
   @ApiProperty()
   descripcion: string;
+  @ApiProperty()
+  imagen: Express.Multer.File;
 }

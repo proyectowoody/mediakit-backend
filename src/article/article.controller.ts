@@ -1,16 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, UploadedFiles } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
-import { UpdateArticleDto } from './dto/update-article.dto';
 import { AuthGuard } from 'src/user/guard/auth.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { Article } from './entities/article.entity';
 
 @ApiTags("Articulos")
 @Controller('articulos')
 export class ArticleController {
-  constructor(private readonly articleService: ArticleService) {}
+  constructor(private readonly articleService: ArticleService) { }
 
   @Get()
   async findAll(): Promise<Article[]> {
@@ -19,14 +18,14 @@ export class ArticleController {
 
   @Post()
   @UseGuards(AuthGuard)
-  @UseInterceptors(FileInterceptor('imagen'))
+  @UseInterceptors(FilesInterceptor('imagenes', 10))
   async create(
-    @UploadedFile() imagen: Express.Multer.File,
+    @UploadedFiles() imagenes: Express.Multer.File[],
     @Body() newArticle: CreateArticleDto,
   ) {
     return await this.articleService.createArticle({
       ...newArticle,
-      imagen,
+      imagenes,
     });
   }
 

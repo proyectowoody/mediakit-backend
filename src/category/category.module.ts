@@ -3,11 +3,13 @@ import { CategoryService } from './category.service';
 import { CategoryController } from './category.controller';
 import { Category } from './entities/category.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CloudinaryModule } from 'src/cloudinay/cloudinay.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Category])],
+  imports: [TypeOrmModule.forFeature([Category]),
+    CloudinaryModule],
   controllers: [CategoryController],
   providers: [CategoryService],
   exports: [CategoryService],
 })
-export class CategoryModule {}
+export class CategoryModule { }

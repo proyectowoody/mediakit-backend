@@ -16,6 +16,9 @@ export class Category {
 
   @Column({ type: 'text' })
   descripcion: string;
+  
+  @Column({ nullable: true })
+  imagen: string;
 
   @OneToMany(() => Article, (articulo) => articulo.categoria)
   articulos: Article[];
