@@ -33,9 +33,9 @@ export class ArticleController {
   @UseGuards(AuthGuard)
   async update(
     @Param('id') id: string,
-    @Body() updateCampaña: CreateArticleDto,
+    @Body() updateArt: CreateArticleDto,
   ) {
-    return this.articleService.updateArticle(id, updateCampaña);
+    return this.articleService.updateArticle(id, updateArt);
   }
 
   @Patch(':id/imagen')
