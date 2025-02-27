@@ -16,7 +16,7 @@ import { EmailDto } from './dto/emailDto';
 import { PasswordDto } from './dto/passwordDto';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/userDto';
-import { URL_FRONTEND } from 'src/url';
+import { URL_FRONTEND } from '../url';
 
 @Injectable()
 export class UserService {
