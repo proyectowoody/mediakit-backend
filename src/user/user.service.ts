@@ -15,6 +15,8 @@ import { LoginDto } from './dto/loginDto';
 import { EmailDto } from './dto/emailDto';
 import { PasswordDto } from './dto/passwordDto';
 import { User } from './entities/user.entity';
+import { CreateUserDto } from './dto/userDto';
+import { URL_FRONTEND } from 'src/url';
 
 @Injectable()
 export class UserService {
@@ -144,6 +146,10 @@ export class UserService {
     return { token };
   }
 
+  async create(createUserDto: CreateUserDto) {
+    return await this.usersRepository.save(createUserDto);
+  }
+  
   async envioEmail(user: any, email: string, correo: string) {
 
     const payload = { email: user.email };
@@ -154,9 +160,8 @@ export class UserService {
 
     let url: string;
     let filePath: string;
-  
-    // const baseUrl = "http://localhost:5173";
-    const baseUrl = "https://respectful-shoes.netlify.app";
+
+    const baseUrl = URL_FRONTEND;
 
     if (correo === 'register') {
       url = `${baseUrl}/login?token=${token}`;

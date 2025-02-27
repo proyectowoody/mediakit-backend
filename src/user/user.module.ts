@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { mailerConfig } from './mailer.config';
@@ -7,6 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants/jwt.constants';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
+import { GoogleModule } from 'src/google/google.module';
+import { GoogleStrategy } from 'src/google/google.strategy';
 
 @Module({
   imports: [
@@ -17,9 +19,10 @@ import { UserService } from './user.service';
       secret: jwtConstants.secret,
       signOptions: { expiresIn: '1d' },
     }),
+    forwardRef(() => GoogleModule)
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, GoogleStrategy],
   exports: [UserService, TypeOrmModule],
 })
-export class UserModule {}
+export class UserModule { }

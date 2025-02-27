@@ -6,8 +6,8 @@ import { UserModule } from './user/user.module';
 import { CategoryModule } from './category/category.module';
 import { ArticleModule } from './article/article.module';
 import { FavoriteModule } from './favorite/favorite.module';
-import 'dotenv/config';
 import { CloudinaryModule } from './cloudinay/cloudinay.module';
+import 'dotenv/config';
 
 @Module({
   imports: [
