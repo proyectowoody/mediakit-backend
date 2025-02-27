@@ -14,18 +14,6 @@ export class CategoryService {
     private cloudinaryService: CloudinaryService,
   ) { }
 
-  // async create(
-  //   createCategoryDto: CreateCategoryDto,
-  // ): Promise<{ message: string; category: Category }> {
-  //   const category = this.categoryRepository.create(createCategoryDto);
-  //   const savedCategory = await this.categoryRepository.save(category);
-
-  //   return {
-  //     message: 'Categoría creada con éxito',
-  //     category: savedCategory,
-  //   };
-  // }
-
   async create(categoria: CreateCategoryDto) {
 
     const categoriaFound = await this.categoryRepository.findOne({

@@ -7,8 +7,8 @@ import { JwtModule } from '@nestjs/jwt';
 import { jwtConstants } from './constants/jwt.constants';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { GoogleModule } from 'src/google/google.module';
-import { GoogleStrategy } from 'src/google/google.strategy';
+import { GoogleModule } from '../google/google.module';
+import { GoogleStrategy } from '../google/google.strategy';
 
 @Module({
   imports: [
