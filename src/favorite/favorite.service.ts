@@ -1,12 +1,9 @@
 import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFavoriteDto } from './dto/create-favorite.dto';
-import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { Favorite } from './entities/favorite.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserService } from 'src/user/user.service';
-import { ArticleService } from 'src/article/article.service';
-import { Article } from 'src/article/entities/article.entity';
 
 @Injectable()
 export class FavoriteService {
@@ -21,20 +18,27 @@ export class FavoriteService {
   async findOne(email: string): Promise<any[]> {
     const user = await this.userService.findByEmail(email);
     const user_id = user.id;
-  
+
     const favoritos = await this.favoritoRepository.find({
       where: { user: { id: user_id } },
-      relations: ['user', 'article'],
+      relations: ['user', 'article', 'article.imagenes'],
     });
-  
+
     const formattedFavoritos = favoritos.map((fav) => ({
-      article: fav.article,         
-      userEmail: fav.user.email,    
+      article: {
+        id: fav.article.id,
+        nombre: fav.article.nombre,
+        descripcion: fav.article.descripcion,
+        fecha: fav.article.fecha,
+        estado: fav.article.estado,
+        precio: fav.article.precio,
+        imagenes: fav.article.imagenes.map((img) => img.url),
+      },
+      userEmail: fav.user.email,
     }));
-  
+
     return formattedFavoritos;
   }
-  
 
   async create(
     createFavoritoDto: CreateFavoriteDto,
