@@ -49,7 +49,6 @@ export class CategoryService {
     };
   }
 
-
   async findAll(): Promise<Category[]> {
     return this.categoryRepository.find();
   }
@@ -135,6 +134,7 @@ export class CategoryService {
 
     await this.categoryRepository.remove(category);
 
-    return { message: 'Artículo eliminado con éxito' };
+    return { message: 'Categoría eliminado con éxito' };
   }
+
 }

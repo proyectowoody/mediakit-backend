@@ -1,5 +1,6 @@
+import { Car } from 'src/car/entities/car.entity';
 import { Favorite } from 'src/favorite/entities/favorite.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
 @Entity('usermediakit')
 export class User {
@@ -26,5 +27,8 @@ export class User {
 
   @OneToMany(() => Favorite, (favorito) => favorito.user)
   favoritos: Favorite[];
-  
+
+  @OneToMany(() => Car, (car) => car.user)
+  car: Car[];
+
 }

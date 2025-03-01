@@ -24,9 +24,19 @@ CREATE TABLE categorymediakit (
     UNIQUE KEY nombre (nombre)
 );
 
+CREATE TABLE suppliersmediakit (
+    id INT NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    descripcion TEXT NOT NULL,
+    imagen VARCHAR(500),
+    PRIMARY KEY (id),
+    UNIQUE KEY nombre (nombre)
+);
+
 CREATE TABLE articlemediakit (
     id INT NOT NULL AUTO_INCREMENT,
     categoria_id INT NOT NULL,
+    supplier_id INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     descripcion TEXT NOT NULL,
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -45,6 +55,16 @@ CREATE TABLE article_images (
 );
 
 CREATE TABLE favoritemediakit (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    articulo_id INT NOT NULL,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES usermediakit(id) ON DELETE CASCADE,
+    FOREIGN KEY (articulo_id) REFERENCES articlemediakit(id) ON DELETE CASCADE
+);
+
+CREATE TABLE carmediakit (
     id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
     articulo_id INT NOT NULL,
