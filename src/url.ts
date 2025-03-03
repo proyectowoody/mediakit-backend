@@ -10,9 +10,9 @@ export const GOOGLE_CLIENT_SECRET = isProduction
     ? process.env.GOOGLE_CLIENT_SECRET_PRODUCTION
     : process.env.GOOGLE_CLIENT_SECRET_DEV;
 
-export const GOOGLE_CALLBACK_URL = isProduction
-    ? process.env.GOOGLE_CALLBACK_URL_PRODUCTION
-    : process.env.GOOGLE_CALLBACK_URL_DEV;
+export const URL_BACKEND = isProduction
+    ? process.env.URL_BACKEND_PRODUCTION
+    : process.env.URL_BACKEND_DEV;
 
 export const URL_FRONTEND = isProduction
     ? process.env.URL_FRONTEND_PRODUCTION

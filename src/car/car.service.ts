@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCarDto } from './dto/create-car.dto';
-import { UpdateCarDto } from './dto/update-car.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from 'src/user/user.service';
 import { Car } from './entities/car.entity';
@@ -27,26 +26,30 @@ export class CarService {
     const groupedArticles = new Map<number, any>();
 
     cars.forEach(car => {
-      const articleId = car.article.id;
+      const article = car.article;
+      const articleId = article.id;
+
+      const finalPrice = article.offer && article.discount ? article.discount : article.precio;
+
       if (!groupedArticles.has(articleId)) {
         groupedArticles.set(articleId, {
           article: {
-            id: car.article.id,
-            nombre: car.article.nombre,
-            descripcion: car.article.descripcion,
-            fecha: car.article.fecha,
-            estado: car.article.estado,
-            precio: car.article.precio,
-            imagenes: car.article.imagenes.map(img => img.url),
+            id: article.id,
+            nombre: article.nombre,
+            descripcion: article.descripcion,
+            fecha: article.fecha,
+            estado: article.estado,
+            precio: finalPrice,
+            imagenes: article.imagenes.map(img => img.url),
           },
           cantidad: 1,
-          subtotal: car.article.precio,
+          subtotal: finalPrice,
           userEmail: car.user.email,
         });
       } else {
         const existingArticle = groupedArticles.get(articleId);
         existingArticle.cantidad += 1;
-        existingArticle.subtotal += car.article.precio;
+        existingArticle.subtotal += finalPrice;
       }
     });
 

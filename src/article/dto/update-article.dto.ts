@@ -1,26 +1,34 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateArticleDto {
-  @ApiProperty({ description: 'Nombre único del artículo a actualizar', required: false })
+  @ApiProperty({ description: 'Nombre único del artículo' })
   nombre?: string;
 
-  @ApiProperty({ description: 'Nueva descripción del artículo', required: false })
+  @ApiProperty({ description: 'Descripción del artículo' })
   descripcion?: string;
 
-  @ApiProperty({ description: 'ID de la categoría del artículo', required: false })
+  @ApiProperty({ description: 'ID de la categoría del artículo' })
   categoria_id?: number;
 
-  @ApiProperty({ description: 'Estado del artículo (nuevo, usado, etc.)', required: false })
+  @ApiProperty({ description: 'ID del proveedor del artículo' })
+  supplier_id?: number;
+
+  @ApiProperty({ description: 'Estado del artículo (nuevo, usado, etc.)' })
   estado?: string;
 
-  @ApiProperty({ description: 'El precio del articulo' })
-  precio: number;
+  @ApiProperty({ description: 'El precio del artículo' })
+  precio?: number;
+
+  @ApiProperty({ description: 'Indica si el artículo está en oferta', default: false })
+  offer?: boolean;
+
+  @ApiProperty({ description: 'Descuento en porcentaje si está en oferta', required: false })
+  discount?: number;
 
   @ApiProperty({
-    description: 'Nueva imagen del artículo',
-    type: 'string',
-    format: 'binary',
-    required: false,
+    description: 'Imágenes del artículo',
+    type: 'array',
+    items: { type: 'string', format: 'binary' },
   })
-  imagen?: Express.Multer.File;
+  imagenes?: Express.Multer.File[];
 }

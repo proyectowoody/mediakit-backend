@@ -42,8 +42,11 @@ CREATE TABLE articlemediakit (
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     estado VARCHAR(255) NOT NULL,
     precio INT NOT NULL,
+    offer BOOLEAN,
+    discount INT,
     PRIMARY KEY (id),
-    FOREIGN KEY (categoria_id) REFERENCES categorymediakit(id) ON DELETE CASCADE
+    FOREIGN KEY (categoria_id) REFERENCES categorymediakit(id) ON DELETE CASCADE,
+    FOREIGN KEY (supplier_id) REFERENCES suppliersmediakit(id) ON DELETE CASCADE
 );
 
 CREATE TABLE article_images (

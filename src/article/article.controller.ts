@@ -16,6 +16,11 @@ export class ArticleController {
     return this.articleService.findAll();
   }
 
+  @Get("/ofertas")
+  async findAllOfertas(): Promise<Article[]> {
+    return this.articleService.findAllOffers();
+  }
+
   @Post()
   @UseGuards(AuthGuard)
   @UseInterceptors(FilesInterceptor('imagenes', 10))
@@ -36,6 +41,23 @@ export class ArticleController {
     @Body() updateArt: CreateArticleDto,
   ) {
     return this.articleService.updateArticle(id, updateArt);
+  }
+
+  @Patch('discount/:id')
+  @UseGuards(AuthGuard)
+  async updateOffer(
+    @Param('id') id: string,
+    @Body() updateArt: CreateArticleDto,
+  ) {
+    return this.articleService.updateArticleDiscount(id, updateArt);
+  }
+
+  @Patch('offer/:id')
+  @UseGuards(AuthGuard)
+  async updateDeleteOffer(
+    @Param('id') id: number,
+  ) {
+    return this.articleService.removeOffer(id);
   }
 
   @Patch(':id/imagen')

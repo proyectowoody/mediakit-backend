@@ -21,10 +21,13 @@ export class Article {
   @ManyToOne(() => Category, (categoria) => categoria.articulos, {
     onDelete: 'CASCADE',
   })
-
   @JoinColumn({ name: 'categoria_id' })
   categoria: Category;
 
+  @ManyToOne(() => Supplier, (supplier) => supplier.articulos, {
+    onDelete: 'CASCADE',
+  })
+  
   @JoinColumn({ name: 'supplier_id' })
   supplier: Supplier;
 
@@ -42,6 +45,12 @@ export class Article {
 
   @Column()
   precio: number;
+
+  @Column({ type: 'boolean', default: false })
+  offer: boolean;
+
+  @Column({ type: 'int', nullable: true })
+  discount: number;
 
   @OneToMany(() => Favorite, (favorito) => favorito.article)
   favoritos: Favorite[];

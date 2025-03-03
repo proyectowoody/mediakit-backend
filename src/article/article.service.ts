@@ -20,7 +20,15 @@ export class ArticleService {
 
   async findAll() {
     return this.articuloRepository.find({
-      relations: ['categoria', 'imagenes'],
+      where: { offer: false },
+      relations: ['categoria', 'supplier', 'imagenes'],
+    });
+  }
+
+  async findAllOffers() {
+    return this.articuloRepository.find({
+      where: { offer: true },
+      relations: ['categoria', 'supplier', 'imagenes'],
     });
   }
 
@@ -43,6 +51,7 @@ export class ArticleService {
       categoria: { id: article.categoria_id },
       estado: article.estado,
       precio: article.precio,
+      supplier: { id: article.supplier_id },
     });
 
     await this.articuloRepository.save(newArticle);
@@ -92,6 +101,32 @@ export class ArticleService {
     };
   }
 
+  async updateArticleDiscount(
+    id: any,
+    updateArticulo: UpdateArticleDto,
+  ): Promise<{ message: string; articulo: Article }> {
+
+    const articulo = await this.articuloRepository.findOne({ where: { id } });
+    if (!articulo) {
+      throw new NotFoundException(`Artículo no encontrado`);
+    }
+
+    if (updateArticulo.discount && updateArticulo.discount > 0) {
+      updateArticulo.offer = true;
+    } else {
+      updateArticulo.offer = false;
+    }
+
+    const updatedArticulo = Object.assign(articulo, updateArticulo);
+
+    await this.articuloRepository.save(updatedArticulo);
+
+    return {
+      message: 'Artículo actualizado con éxito',
+      articulo: updatedArticulo,
+    };
+  }
+
   async updateImagen(
     id: any,
     imagen: Express.Multer.File,
@@ -128,6 +163,23 @@ export class ArticleService {
       message: 'Imagen actualizada con éxito',
       articulo,
     };
+  }
+
+  async removeOffer(id: number): Promise<{ message: string }> {
+    const articulo = await this.articuloRepository.findOne({ where: { id } });
+
+    if (!articulo) {
+      throw new NotFoundException(`Artículo con id ${id} no encontrado`);
+    }
+
+    if (articulo.offer) {
+      articulo.offer = false;
+      articulo.discount = 0;
+      await this.articuloRepository.save(articulo);
+      return { message: 'Oferta eliminada del artículo' };
+    }
+
+    return { message: 'El artículo no estaba en oferta' };
   }
 
   private extractPublicId(imageUrl: string): string | null {
