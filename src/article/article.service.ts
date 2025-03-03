@@ -19,10 +19,12 @@ export class ArticleService {
   ) { }
 
   async findAll() {
-    return this.articuloRepository.find({
+     const data = await this.articuloRepository.find({
       where: { offer: false },
       relations: ['categoria', 'supplier', 'imagenes'],
     });
+
+    return data;
   }
 
   async findAllOffers() {
