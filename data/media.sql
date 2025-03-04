@@ -78,3 +78,22 @@ CREATE TABLE carmediakit (
     FOREIGN KEY (user_id) REFERENCES usermediakit(id) ON DELETE CASCADE,
     FOREIGN KEY (articulo_id) REFERENCES articlemediakit(id) ON DELETE CASCADE
 );
+
+CREATE TABLE buymediakit (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES usermediakit(id) ON DELETE CASCADE
+);
+
+CREATE TABLE detailbuymediakit (
+    id INT NOT NULL AUTO_INCREMENT,
+    buy_id INT NOT NULL,
+    articulo_id INT NOT NULL,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    FOREIGN KEY (buy_id) REFERENCES buymediakit(id) ON DELETE CASCADE,
+    FOREIGN KEY (articulo_id) REFERENCES articlemediakit(id) ON DELETE CASCADE
+);
+

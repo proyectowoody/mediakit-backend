@@ -26,7 +26,7 @@ export class PaypalService {
         purchase_units: [
           {
             amount: {
-              currency_code: 'USD',
+              currency_code: 'EUR',
               value: total.toFixed(2),
             },
           },
@@ -90,6 +90,14 @@ export class PaypalService {
           },
         }
       );
+
+      const compras = await this.carService.findOne(email);
+
+      const userEmail = compras.articles.length > 0 ? compras.articles[0].userEmail : null;
+      const articleIds = compras.articles.map(item => item.article.id);
+
+      // await this.carService.removeAll(email);
+
     } catch (error) {
       throw new Error('Error capturing payment');
     }

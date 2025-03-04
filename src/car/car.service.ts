@@ -70,6 +70,7 @@ export class CarService {
     }
 
     const user_id = user.id;
+    
 
     const nuevoFavorito = this.carRepository.create({
       user: { id: user_id },
@@ -120,6 +121,25 @@ export class CarService {
 
     return {
       message: 'Favorito eliminado.',
+    };
+  }
+
+  async removeAll(email_user: string): Promise<{ message: string }> {
+    const user = await this.userService.findByEmail(email_user);
+
+    if (!user) {
+      throw new BadRequestException('Usuario no encontrado.');
+    }
+
+    const user_id = user.id;
+    const result = await this.carRepository.delete({ user: { id: user_id } });
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`No hay artículos en el carrito para eliminar.`);
+    }
+
+    return {
+      message: 'Todos los artículos han sido eliminados del carrito.',
     };
   }
 

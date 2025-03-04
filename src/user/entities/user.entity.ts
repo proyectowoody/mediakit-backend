@@ -1,3 +1,4 @@
+import { Buy } from 'src/buy/entities/buy.entity';
 import { Car } from 'src/car/entities/car.entity';
 import { Favorite } from 'src/favorite/entities/favorite.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
@@ -30,5 +31,8 @@ export class User {
 
   @OneToMany(() => Car, (car) => car.user)
   car: Car[];
+
+  @OneToMany(() => Buy, (buy) => buy.user)
+  buy: Buy[];
 
 }

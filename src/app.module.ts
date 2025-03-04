@@ -10,6 +10,7 @@ import { CloudinaryModule } from './cloudinay/cloudinay.module';
 import { CarModule } from './car/car.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { PaypalModule } from './paypal/paypal.module';
+import { BuyModule } from './buy/buy.module';
 import 'dotenv/config';
 
 @Module({
@@ -34,7 +35,8 @@ import 'dotenv/config';
     CloudinaryModule,
     CarModule,
     SuppliersModule,
-    PaypalModule
+    PaypalModule,
+    BuyModule
   ],
 })
 export class AppModule { }
