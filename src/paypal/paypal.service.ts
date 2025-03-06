@@ -6,12 +6,16 @@ import { CarService } from 'src/car/car.service';
 import { URL_BACKEND, URL_FRONTEND } from 'src/url';
 import 'dotenv/config';
 import axios from 'axios';
+import { BuyService } from 'src/buy/buy.service';
+import { DetailbuyService } from 'src/detailbuy/detailbuy.service';
 
 @Injectable()
 export class PaypalService {
 
   constructor(
     private readonly carService: CarService,
+    private readonly buyService: BuyService,
+    private readonly buyDetail: DetailbuyService
   ) { }
 
   async createPayment(email: string) {
@@ -94,9 +98,13 @@ export class PaypalService {
       const compras = await this.carService.findOne(email);
 
       const userEmail = compras.articles.length > 0 ? compras.articles[0].userEmail : null;
+      const buy = await this.buyService.create(userEmail);
+
+      const idbuy = buy.id;
       const articleIds = compras.articles.map(item => item.article.id);
 
-      // await this.carService.removeAll(email);
+      await this.buyDetail.create(idbuy, articleIds);
+      await this.carService.removeAll(email);
 
     } catch (error) {
       throw new Error('Error capturing payment');

@@ -11,6 +11,9 @@ import { CarModule } from './car/car.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { PaypalModule } from './paypal/paypal.module';
 import { BuyModule } from './buy/buy.module';
+import { DetailbuyModule } from './detailbuy/detailbuy.module';
+import { AddressModule } from './address/address.module';
+import { CommentModule } from './comment/comment.module';
 import 'dotenv/config';
 
 @Module({
@@ -36,7 +39,10 @@ import 'dotenv/config';
     CarModule,
     SuppliersModule,
     PaypalModule,
-    BuyModule
+    BuyModule,
+    DetailbuyModule,
+    AddressModule,
+    CommentModule
   ],
 })
 export class AppModule { }

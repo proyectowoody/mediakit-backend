@@ -97,3 +97,31 @@ CREATE TABLE detailbuymediakit (
     FOREIGN KEY (articulo_id) REFERENCES articlemediakit(id) ON DELETE CASCADE
 );
 
+CREATE TABLE addressmediakit (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    calle VARCHAR(255) NOT NULL,
+    numero VARCHAR(10) NOT NULL,
+    piso_puerta VARCHAR(50) NULL,
+    codigo_postal VARCHAR(5) NOT NULL,
+    ciudad VARCHAR(100) NOT NULL,
+    provincia VARCHAR(100) NOT NULL,
+    comunidad_autonoma VARCHAR(100) NOT NULL,
+    pais VARCHAR(50) NOT NULL,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES usermediakit(id) ON DELETE CASCADE
+);
+
+CREATE TABLE commentmediakit (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    buy_id INT NOT NULL,
+    descripcion TEXT NOT NULL,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES usermediakit(id) ON DELETE CASCADE,
+    FOREIGN KEY (buy_id) REFERENCES buymediakit(id) ON DELETE CASCADE
+);
+
+

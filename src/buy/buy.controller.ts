@@ -1,34 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { BuyService } from './buy.service';
-import { CreateBuyDto } from './dto/create-buy.dto';
-import { UpdateBuyDto } from './dto/update-buy.dto';
+import { AuthGuard } from 'src/user/guard/auth.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags("Buy")
 @Controller('buy')
 export class BuyController {
-  constructor(private readonly buyService: BuyService) {}
+  constructor(private readonly buyService: BuyService) { }
 
-  @Post()
-  create(@Body() createBuyDto: CreateBuyDto) {
-    return this.buyService.create(createBuyDto);
+  @Get(':email')
+  @UseGuards(AuthGuard)
+  async findOne(@Param('email') email: string) {
+    return this.buyService.findOne(email);
   }
 
-  @Get()
-  findAll() {
-    return this.buyService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.buyService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBuyDto: UpdateBuyDto) {
-    return this.buyService.update(+id, updateBuyDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.buyService.remove(+id);
-  }
 }

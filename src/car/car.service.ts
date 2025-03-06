@@ -15,6 +15,7 @@ export class CarService {
   ) { }
 
   async findOne(email: string): Promise<{ articles: any[]; total: number }> {
+    
     const user = await this.userService.findByEmail(email);
     const user_id = user.id;
 
