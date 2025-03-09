@@ -60,7 +60,10 @@ export class GoogleService {
   private async generateToken(user): Promise<string> {
     try {
       const payload = { email: user.email, role: user.role };
-      return await this.jwtService.signAsync(payload);
+      return await this.jwtService.signAsync(payload, {
+        expiresIn: '1h',
+        jwtid: `${Date.now()}`,
+      });
     } catch (error) {
       console.error("Error al generar el token:", error);
       throw new InternalServerErrorException("Error al generar el token de autenticación.");

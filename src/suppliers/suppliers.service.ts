@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
 import { UpdateSupplierDto } from './dto/update-supplier.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -69,19 +69,28 @@ export class SuppliersService {
       id: number,
       updateSupplierDto: UpdateSupplierDto,
     ): Promise<{ message: string; supplier: Supplier }> {
-      const supplier = await this.supplierRepository.preload({
-        id,
-        ...updateSupplierDto,
-      });
-      if (!supplier) {
-        throw new NotFoundException(`Proveedor no encontrada.`);
+      try {
+        const supplier = await this.supplierRepository.preload({
+          id,
+          ...updateSupplierDto,
+        });
+    
+        if (!supplier) {
+          throw new NotFoundException(`Proveedor no encontrado.`);
+        }
+    
+        const updatedSupplier = await this.supplierRepository.save(supplier);
+    
+        return {
+          message: 'Proveedor actualizado con éxito',
+          supplier: updatedSupplier,
+        };
+      } catch (error) {
+        throw new InternalServerErrorException(
+          `Error al actualizar el proveedor: ${error.message}`,
+        );
       }
-      const updatedCategory = await this.supplierRepository.save(supplier);
-      return {
-        message: 'Proveedor actualizada con éxito',
-        supplier: updatedCategory,
-      };
-    }
+    }    
   
     private extractPublicId(imageUrl: string): string | null {
       const regex = /\/([^\/]+)\.\w+$/;

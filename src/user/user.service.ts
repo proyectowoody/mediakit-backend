@@ -75,14 +75,17 @@ export class UserService {
     const isPasswordValid = await bcryptjs.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Contraseña inválido');
+      throw new UnauthorizedException('Contraseña inválida');
     }
 
-    if (user.isVerified == false) {
+    if (!user.isVerified) {
       throw new UnauthorizedException('Su cuenta no está verificada');
     }
 
-    const payload = { email, user: user.role };
+    const payload = {
+      email,
+      user: user.role,
+    };
 
     const token = await this.jwtService.signAsync(payload, {
       expiresIn: '1h',
@@ -149,7 +152,7 @@ export class UserService {
   async create(createUserDto: CreateUserDto) {
     return await this.usersRepository.save(createUserDto);
   }
-  
+
   async envioEmail(user: any, email: string, correo: string) {
 
     const payload = { email: user.email };

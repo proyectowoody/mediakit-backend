@@ -28,7 +28,7 @@ export class Article {
   @ManyToOne(() => Supplier, (supplier) => supplier.articulos, {
     onDelete: 'CASCADE',
   })
-  
+
   @JoinColumn({ name: 'supplier_id' })
   supplier: Supplier;
 
@@ -47,10 +47,10 @@ export class Article {
   @Column()
   precio: number;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false, nullable: false })
   offer: boolean;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int', default: 0, nullable: false })
   discount: number;
 
   @OneToMany(() => Favorite, (favorito) => favorito.article)

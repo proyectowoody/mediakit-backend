@@ -14,6 +14,7 @@ import { BuyModule } from './buy/buy.module';
 import { DetailbuyModule } from './detailbuy/detailbuy.module';
 import { AddressModule } from './address/address.module';
 import { CommentModule } from './comment/comment.module';
+import { ContactModule } from './contact/contact.module';
 import 'dotenv/config';
 
 @Module({
@@ -29,6 +30,7 @@ import 'dotenv/config';
       connectTimeout: 60000,
       entities: [join(__dirname + '/**/*.entity{.ts,.js}')],
       synchronize: true,
+      // logging: true,
       ssl: { rejectUnauthorized: false },
     }),
     UserModule,
@@ -42,7 +44,8 @@ import 'dotenv/config';
     BuyModule,
     DetailbuyModule,
     AddressModule,
-    CommentModule
+    CommentModule,
+    ContactModule
   ],
 })
 export class AppModule { }

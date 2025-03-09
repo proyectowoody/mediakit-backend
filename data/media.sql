@@ -1,9 +1,14 @@
-DROP TABLE categorymediakit;
-DROP TABLE suppliersmediakit;
-DROP TABLE articlemediakit;
-DROP TABLE favoritemediakit;
-DROP TABLE article_images;
-DROP TABLE carmediakit;
+
+DROP TABLE IF EXISTS article_images;
+DROP TABLE IF EXISTS detailbuymediakit;
+DROP TABLE IF EXISTS favoritemediakit;
+DROP TABLE IF EXISTS carmediakit;
+DROP TABLE IF EXISTS commentmediakit;
+DROP TABLE IF EXISTS buymediakit;
+DROP TABLE IF EXISTS addressmediakit;
+DROP TABLE IF EXISTS articlemediakit;
+DROP TABLE IF EXISTS categorymediakit;
+DROP TABLE IF EXISTS suppliersmediakit;
 
 CREATE TABLE usermediakit (
     id INT NOT NULL AUTO_INCREMENT,
@@ -44,8 +49,8 @@ CREATE TABLE articlemediakit (
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     estado VARCHAR(255) NOT NULL,
     precio INT NOT NULL,
-    offer BOOLEAN,
-    discount INT,
+    offer BOOLEAN NOT NULL DEFAULT 0,
+    discount INT NOT NULL DEFAULT 0,
     PRIMARY KEY (id),
     FOREIGN KEY (categoria_id) REFERENCES categorymediakit(id) ON DELETE CASCADE,
     FOREIGN KEY (supplier_id) REFERENCES suppliersmediakit(id) ON DELETE CASCADE
