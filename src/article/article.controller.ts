@@ -16,6 +16,11 @@ export class ArticleController {
     return this.articleService.findAll();
   }
 
+  @Get('count')
+  async countArticles() {
+    return this.articleService.countArticles();
+  }
+
   @Get("/ofertas")
   async findAllOfertas(): Promise<Article[]> {
     return this.articleService.findAllOffers();

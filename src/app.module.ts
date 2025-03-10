@@ -15,6 +15,7 @@ import { DetailbuyModule } from './detailbuy/detailbuy.module';
 import { AddressModule } from './address/address.module';
 import { CommentModule } from './comment/comment.module';
 import { ContactModule } from './contact/contact.module';
+import { SubcategoryModule } from './subcategory/subcategory.module';
 import 'dotenv/config';
 
 @Module({
@@ -45,7 +46,8 @@ import 'dotenv/config';
     DetailbuyModule,
     AddressModule,
     CommentModule,
-    ContactModule
+    ContactModule,
+    SubcategoryModule
   ],
 })
 export class AppModule { }

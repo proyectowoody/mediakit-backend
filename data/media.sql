@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS commentmediakit;
 DROP TABLE IF EXISTS buymediakit;
 DROP TABLE IF EXISTS addressmediakit;
 DROP TABLE IF EXISTS articlemediakit;
+DROP TABLE IF EXISTS subcategorymediakit;
 DROP TABLE IF EXISTS categorymediakit;
 DROP TABLE IF EXISTS suppliersmediakit;
 
@@ -29,6 +30,15 @@ CREATE TABLE categorymediakit (
     imagen VARCHAR(500),
     PRIMARY KEY (id),
     UNIQUE KEY nombre (nombre)
+);
+
+CREATE TABLE subcategorymediakit (
+    id INT NOT NULL AUTO_INCREMENT,
+    nombre VARCHAR(255) NOT NULL,
+    categoria_id INT NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY nombre (nombre),
+    FOREIGN KEY (categoria_id) REFERENCES categorymediakit(id) ON DELETE CASCADE
 );
 
 CREATE TABLE suppliersmediakit (

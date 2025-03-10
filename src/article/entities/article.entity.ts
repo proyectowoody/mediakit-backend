@@ -22,6 +22,7 @@ export class Article {
   @ManyToOne(() => Category, (categoria) => categoria.articulos, {
     onDelete: 'CASCADE',
   })
+  
   @JoinColumn({ name: 'categoria_id' })
   categoria: Category;
 

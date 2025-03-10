@@ -1,4 +1,5 @@
 import { Article } from 'src/article/entities/article.entity';
+import { Subcategory } from 'src/subcategory/entities/subcategory.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -16,11 +17,14 @@ export class Category {
 
   @Column({ type: 'text' })
   descripcion: string;
-  
+
   @Column({ nullable: true })
   imagen: string;
 
+  @OneToMany(() => Subcategory, (subcategory) => subcategory.categoria)
+  subcategorias: Subcategory[]; 
+
   @OneToMany(() => Article, (articulo) => articulo.categoria)
   articulos: Article[];
-  
+
 }

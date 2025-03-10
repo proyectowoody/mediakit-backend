@@ -28,6 +28,11 @@ export class UserController {
     return this.userService.register(registerDto);
   }
 
+  @Get('count')
+  async countArticles() {
+    return this.userService.count();
+  }
+
   @HttpCode(HttpStatus.OK)
   @Post('login')
   login(@Body() loginDto: LoginDto) {

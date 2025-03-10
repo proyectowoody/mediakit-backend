@@ -18,10 +18,15 @@ export class ArticleService {
     private cloudinaryService: CloudinaryService,
   ) { }
 
+  async countArticles(): Promise<{ total: number }> {
+    const total = await this.articuloRepository.count();
+    return { total };
+  }
+
   async findAll() {
-     const data = await this.articuloRepository.find({
+    const data = await this.articuloRepository.find({
       where: { offer: false },
-      relations: ['categoria', 'supplier', 'imagenes'],
+      relations: ['categoria', 'categoria.subcategorias', 'supplier', 'imagenes'],
     });
 
     return data;

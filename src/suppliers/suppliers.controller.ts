@@ -9,7 +9,7 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags("Supplier")
 @Controller('supplier')
 export class SuppliersController {
-  constructor(private readonly suppliersService: SuppliersService) {}
+  constructor(private readonly suppliersService: SuppliersService) { }
 
   @Post()
   @UseGuards(AuthGuard)
@@ -28,6 +28,11 @@ export class SuppliersController {
   @UseGuards(AuthGuard)
   findAll() {
     return this.suppliersService.findAll();
+  }
+
+  @Get('count')
+  async countArticles() {
+    return this.suppliersService.countSup();
   }
 
   @Get(':id')

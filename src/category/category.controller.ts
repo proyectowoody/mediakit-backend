@@ -30,6 +30,11 @@ export class CategoryController {
     return this.categoryService.findAll();
   }
 
+  @Get("/subcategorias")
+  findAllSubcategorias() {
+    return this.categoryService.findAllSub();
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard)
   findOne(@Param('id') id: string) {

@@ -53,6 +53,12 @@ export class CategoryService {
     return await this.categoryRepository.find();
   }
 
+  async findAllSub(): Promise<Category[]> {
+    return await this.categoryRepository.find({
+      relations: ["subcategorias"], 
+    });
+  }
+
   async findOne(id: number): Promise<{ message: string; category: Category }> {
     const category = await this.categoryRepository.findOne({ where: { id } });
     if (!category) {

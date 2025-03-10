@@ -27,6 +27,11 @@ export class UserService {
     private readonly mailerService: MailerService,
   ) { }
 
+  async count(): Promise<{ total: number }> {
+    const total = await this.usersRepository.count();
+    return { total };
+  }
+
   async findByEmail(email: string): Promise<User> {
     return await this.usersRepository.findOne({
       where: { email },
