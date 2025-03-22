@@ -36,7 +36,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: 'https://respectful-shoes.netlify.app',
+    origin: URL_FRONTEND,
     credentials: true,
   });
 
