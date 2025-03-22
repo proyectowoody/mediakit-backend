@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from 'src/user/user.service';
 import { Car } from './entities/car.entity';
 import { Repository } from 'typeorm';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class CarService {
@@ -15,7 +16,6 @@ export class CarService {
   ) { }
 
   async findOne(email: string): Promise<{ articles: any[]; total: number }> {
-    
     const user = await this.userService.findByEmail(email);
     const user_id = user.id;
 
@@ -30,7 +30,7 @@ export class CarService {
       const article = car.article;
       const articleId = article.id;
 
-      const finalPrice = article.offer && article.discount ? article.discount : article.precio;
+      const finalPrice = article.precioActual;
 
       if (!groupedArticles.has(articleId)) {
         groupedArticles.set(articleId, {
@@ -40,7 +40,9 @@ export class CarService {
             descripcion: article.descripcion,
             fecha: article.fecha,
             estado: article.estado,
-            precio: finalPrice,
+            precio: article.precio,
+            precioAct: article.precioActual,
+            discount: article.discount,
             imagenes: article.imagenes.map(img => img.url),
           },
           cantidad: 1,
@@ -56,7 +58,6 @@ export class CarService {
 
     const formattedCars = Array.from(groupedArticles.values());
     const total = formattedCars.reduce((sum, car) => sum + car.subtotal, 0);
-
     return { articles: formattedCars, total };
   }
 
@@ -65,15 +66,17 @@ export class CarService {
   ): Promise<{ message: string; articulo_id: number }> {
 
     const { articulo_id, email_user } = createCartDto;
+
     const user = await this.userService.findByEmail(email_user);
     if (!user) {
       throw new BadRequestException('Usuario no encontrado.');
     }
 
     const user_id = user.id;
-    
+
 
     const nuevoFavorito = this.carRepository.create({
+      fecha: new Date().toISOString(),
       user: { id: user_id },
       article: { id: articulo_id },
     });
@@ -142,6 +145,93 @@ export class CarService {
     return {
       message: 'Todos los artículos han sido eliminados del carrito.',
     };
+  }
+
+  async findAbandonedCarts(): Promise<{ userEmail: string; articles: any[] }[]> {
+    const allCarts = await this.carRepository.find({ relations: ['user', 'article', 'article.imagenes'] });
+
+    const ahoraUTC = new Date();
+    ahoraUTC.setHours(ahoraUTC.getHours() - 1);
+
+    const cartsFiltered = allCarts.filter(car => {
+      const carritoFecha = new Date(car.fecha);
+      const segundosTranscurridos = Math.floor((ahoraUTC.getTime() - carritoFecha.getTime()) / 1000);
+
+      return segundosTranscurridos >= 3600;
+    });
+
+    const groupedUsers = new Map<string, { userEmail: string; articles: any[] }>();
+
+    cartsFiltered.forEach(car => {
+      const userEmail = car.user?.email || "desconocido";
+      const article = car.article;
+
+      if (!groupedUsers.has(userEmail)) {
+        groupedUsers.set(userEmail, {
+          userEmail,
+          articles: [],
+        });
+      }
+
+      groupedUsers.get(userEmail)!.articles.push({
+        id: article.id,
+        nombre: article.nombre,
+        descripcion: article.descripcion,
+        precio: article.precio,
+        imagenes: article.imagenes?.map(img => img.url) || [],
+      });
+    });
+
+    return Array.from(groupedUsers.values());
+  }
+
+  @Cron('0 * * * *')
+  async handleAbandonedCarts() {
+    const abandonedCarts = await this.findAbandonedCarts();
+    const emails = abandonedCarts.map(cart => cart.userEmail);
+
+    for (const email of emails) {
+      const Usuario = { email };
+      await this.userService.envioEmail(Usuario, email, 'car');
+    }
+  }
+
+  async removeCartArticle(
+    articulo_id: number,
+    dat: string,
+    email_user: string
+  ): Promise<{ message: string }> {
+
+    const user = await this.userService.findByEmail(email_user);
+    if (!user) {
+      throw new BadRequestException('Usuario no encontrado.');
+    }
+
+    const user_id = user.id;
+
+    if (dat === '+1') {
+      await this.create({ articulo_id, email_user });
+      return { message: 'Artículo agregado al carrito.' };
+    }
+
+    if (dat === '-1') {
+      const existingItem = await this.carRepository.findOne({
+        where: {
+          article: { id: articulo_id },
+          user: { id: user_id },
+        },
+        order: { fecha: 'ASC' }, 
+      });
+
+      if (!existingItem) {
+        throw new NotFoundException('No se encontró una unidad del artículo en el carrito.');
+      }
+
+      await this.carRepository.remove(existingItem);
+      return { message: 'Una unidad del artículo fue eliminada del carrito.' };
+    }
+
+    throw new BadRequestException('Operación inválida. Solo se permite +1 o -1.');
   }
 
 }

@@ -1,6 +1,7 @@
 import { Address } from 'src/address/entities/address.entity';
 import { Buy } from 'src/buy/entities/buy.entity';
 import { Car } from 'src/car/entities/car.entity';
+import { Cash } from 'src/cash/entities/cash.entity';
 import { Comment } from 'src/comment/entities/comment.entity';
 import { Favorite } from 'src/favorite/entities/favorite.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
@@ -42,5 +43,8 @@ export class User {
 
   @OneToMany(() => Comment, (comment) => comment.user)
   comment: Comment[];
+
+  @OneToMany(() => Cash, (cash) => cash.user)
+  cash: Cash[];
 
 }

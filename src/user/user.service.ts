@@ -17,9 +17,12 @@ import { PasswordDto } from './dto/passwordDto';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/userDto';
 import { URL_FRONTEND } from '../url';
+import * as jose from 'jose';
+import 'dotenv/config';
 
 @Injectable()
 export class UserService {
+
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
@@ -50,27 +53,35 @@ export class UserService {
       throw new BadRequestException('Ingrese un correo válido.');
     }
 
+    const userCount = await this.usersRepository.count(); 
+
     const hashedPassword = await bcryptjs.hash(password, 10);
-    const role = 'client';
+    const isFirstUser = userCount === 0;
+
     const newUser = this.usersRepository.create({
       name,
       lastName,
       email,
       password: hashedPassword,
-      isVerified: false,
-      role: role,
+      isVerified: isFirstUser ? true : false,
+      role: isFirstUser ? 'admin' : 'client',
     });
 
     await this.usersRepository.save(newUser);
 
-    const Usuario = { email, role };
+    if (!isFirstUser) {
+      const Usuario = { email, role: 'client' };
+      await this.envioEmail(Usuario, email, 'register');
+    }
 
-    await this.envioEmail(Usuario, email, 'register');
-
-    return { message: 'Registro exitoso, verifique su correo.' };
+    return {
+      message: isFirstUser
+        ? 'Primer usuario creado como administrador.'
+        : 'Registro exitoso, verifique su correo.',
+    };
   }
 
-  async login({ email, password }: LoginDto) {
+  async login({ email, password }: LoginDto): Promise<string> {
     const user = await this.usersRepository.findOneBy({ email });
 
     if (!user) {
@@ -78,7 +89,6 @@ export class UserService {
     }
 
     const isPasswordValid = await bcryptjs.compare(password, user.password);
-
     if (!isPasswordValid) {
       throw new UnauthorizedException('Contraseña inválida');
     }
@@ -87,20 +97,18 @@ export class UserService {
       throw new UnauthorizedException('Su cuenta no está verificada');
     }
 
-    const payload = {
+    const payload: jose.JWTPayload = {
       email,
       user: user.role,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600,
     };
 
-    const token = await this.jwtService.signAsync(payload, {
-      expiresIn: '1h',
-      jwtid: `${Date.now()}`,
-    });
-
-    return { token };
+    return await this.encryptToken(payload);
   }
 
   async email({ email }: EmailDto) {
+
     const user = await this.usersRepository.findOneBy({ email });
 
     if (!user) {
@@ -127,13 +135,7 @@ export class UserService {
 
     await this.usersRepository.update({ email }, { password: hashedNewPassword });
 
-    const payload = { email: user.email, role: user.role };
-    const token = await this.jwtService.signAsync(payload, {
-      expiresIn: '1h',
-      jwtid: `${Date.now()}`,
-    });
-
-    return { token, message: 'Contraseña actualizada' };
+    return
   }
 
   async token(email: string) {
@@ -145,13 +147,14 @@ export class UserService {
 
     await this.usersRepository.update({ email }, { isVerified: true });
 
-    const payload = { email, user: user.role };
-    const token = await this.jwtService.signAsync(payload, {
-      expiresIn: '1h',
-      jwtid: `${Date.now()}`,
-    });
+    const payload: jose.JWTPayload = {
+      email,
+      user: user.role,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    };
 
-    return { token };
+    return await this.encryptToken(payload);
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -161,10 +164,8 @@ export class UserService {
   async envioEmail(user: any, email: string, correo: string) {
 
     const payload = { email: user.email };
-    const token = await this.jwtService.signAsync(payload, {
-      expiresIn: '5m',
-      jwtid: `${Date.now()}`,
-    });
+
+    const token = await this.encryptToken(payload);
 
     let url: string;
     let filePath: string;
@@ -172,11 +173,14 @@ export class UserService {
     const baseUrl = URL_FRONTEND;
 
     if (correo === 'register') {
-      url = `${baseUrl}/login?token=${token}`;
+      url = `${baseUrl}/iniciar-sesion?token=${token}`;
       filePath = path.resolve(process.cwd(), 'src/user/html/plantillaReg.html');
     } else if (correo === 'verificacion') {
-      url = `${baseUrl}/password?token=${token}`;
+      url = `${baseUrl}/recuperar-contrasena?token=${token}`;
       filePath = path.resolve(process.cwd(), 'src/user/html/plantilla.html');
+    } else if (correo === 'car') {
+      url = `${baseUrl}/iniciar-sesion?token=${token}`;
+      filePath = path.resolve(process.cwd(), 'src/user/html/plantillaCar.html');
     } else {
       throw new BadRequestException('Tipo de correo no válido');
     }
@@ -189,6 +193,23 @@ export class UserService {
       subject: 'Correo de verificación',
       html: personalizedHtml,
     });
+
+  }
+
+  async encryptToken(payload: jose.JWTPayload): Promise<string> {
+    let secret = process.env.JWT_SECRET;
+
+    if (!secret) {
+      throw new Error('JWT_SECRET no está definido');
+    }
+
+    secret = secret.padEnd(32, '0').slice(0, 32);
+    const encodedSecret = new TextEncoder().encode(secret);
+
+    return await new jose.EncryptJWT(payload)
+      .setProtectedHeader({ alg: 'dir', enc: 'A256GCM' })
+      .setExpirationTime('1h')
+      .encrypt(encodedSecret);
   }
 
 }

@@ -1,6 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, UseGuards, Query, Request } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
-import { CreateFavoriteDto } from './dto/create-favorite.dto';
 import { AuthGuard } from 'src/user/guard/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
 import { Favorite } from './entities/favorite.entity';
@@ -8,27 +7,29 @@ import { Favorite } from './entities/favorite.entity';
 @ApiTags('Favoritos')
 @Controller('favorito')
 export class FavoriteController {
-  constructor(private readonly favoriteService: FavoriteService) {}
+  constructor(private readonly favoriteService: FavoriteService) { }
 
-  @Get(':email')
+  @Get()
   @UseGuards(AuthGuard)
-  async findOne(@Param('email') email: string): Promise<Favorite[]> {
+  async findOne(@Request() req): Promise<Favorite[]> {
+    const email = req.user.email;
     return this.favoriteService.findOne(email);
   }
 
   @Post()
   @UseGuards(AuthGuard)
-  async create(@Body() createFavoritoDto: CreateFavoriteDto) {
-    return this.favoriteService.create(createFavoritoDto);
+  async create(@Request() req, @Body() body: { articulo_id: number }) {
+    const email = req.user.email; 
+    return this.favoriteService.create({ articulo_id: body.articulo_id, email_user: email });
   }
-  
+
   @Delete()
   @UseGuards(AuthGuard)
   async remove(
     @Query('articulo_id') articulo_id: number,
-    @Query('email_user') email_user: string,
+    @Request() req
   ): Promise<{ message: string }> {
-    
+    const email_user = req.user.email;
     return this.favoriteService.remove(articulo_id, email_user);
   }
 }

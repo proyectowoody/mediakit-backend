@@ -9,7 +9,11 @@ export class ArticleImage {
   @Column()
   url: string;
 
-  @ManyToOne(() => Article, (article) => article.imagenes, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Article, (article) => article.imagenes, { onDelete: 'CASCADE', nullable: false })
   @JoinColumn({ name: 'article_id' })
   article: Article;
+
+  @Column({ name: 'article_id', nullable: true }) 
+  articleId: number;
+
 }

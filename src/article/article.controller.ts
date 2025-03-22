@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UseInterceptors, UploadedFile, UploadedFiles, HttpStatus, HttpException, Query } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { AuthGuard } from 'src/user/guard/auth.guard';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
 import { Article } from './entities/article.entity';
+import { UpdateArticleDto } from './dto/update-article.dto';
 
 @ApiTags("Articulos")
 @Controller('articulos')
@@ -39,15 +40,6 @@ export class ArticleController {
     });
   }
 
-  @Patch(':id')
-  @UseGuards(AuthGuard)
-  async update(
-    @Param('id') id: string,
-    @Body() updateArt: CreateArticleDto,
-  ) {
-    return this.articleService.updateArticle(id, updateArt);
-  }
-
   @Patch('discount/:id')
   @UseGuards(AuthGuard)
   async updateOffer(
@@ -65,20 +57,36 @@ export class ArticleController {
     return this.articleService.removeOffer(id);
   }
 
-  @Patch(':id/imagen')
+  @Patch(':id')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FileInterceptor('imagen'))
-  async updateImagen(
+  @UseInterceptors(FilesInterceptor('imagenes', 10)) 
+  async update(
     @Param('id') id: string,
-    @UploadedFile() imagen: Express.Multer.File,
+    @UploadedFiles() imagenes: Express.Multer.File[],
+    @Body() updateArt: UpdateArticleDto
   ) {
-    return this.articleService.updateImagen(id, imagen);
+    await this.articleService.updateArticle(id, updateArt);
+    await this.articleService.updateImagen(id, imagenes);
+   
+    return { message: 'Artículo actualizado correctamente' };
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard)
   async delete(@Param('id') id: string) {
     return this.articleService.deleteArticle(id);
+  }
+
+  @Delete()
+  @UseGuards(AuthGuard)
+  async deleteArticle(
+    @Query('imageUrl') imageUrl: string
+  ) {
+    if (!imageUrl) {
+      throw new HttpException('La URL de la imagen es requerida', HttpStatus.BAD_REQUEST);
+    }
+
+    return this.articleService.deleteArticleImage(decodeURIComponent(imageUrl));
   }
 
 }

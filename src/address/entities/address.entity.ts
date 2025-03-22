@@ -1,13 +1,14 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, JoinColumn } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 
 @Entity('addressmediakit')
 export class Address {
-  
+
   @PrimaryGeneratedColumn()
   id: number;
 
   @ManyToOne(() => User, (user) => user.addresses, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @Column({ type: 'varchar', length: 255 })
@@ -35,5 +36,5 @@ export class Address {
   pais: string;
 
   @CreateDateColumn()
-  fecha_creacion: Date;
+  fecha: Date;
 }

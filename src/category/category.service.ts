@@ -55,7 +55,7 @@ export class CategoryService {
 
   async findAllSub(): Promise<Category[]> {
     return await this.categoryRepository.find({
-      relations: ["subcategorias"], 
+      relations: ["subcategorias"],
     });
   }
 
@@ -70,18 +70,33 @@ export class CategoryService {
     };
   }
 
-  async update(
+  async updateCategory(
     id: number,
     updateCategoryDto: UpdateCategoryDto,
+    imagen?: Express.Multer.File
   ): Promise<{ message: string; category: Category }> {
-    const category = await this.categoryRepository.preload({
-      id,
-      ...updateCategoryDto,
-    });
+    const category = await this.categoryRepository.findOne({ where: { id } });
+
     if (!category) {
       throw new NotFoundException(`Categoría no encontrada.`);
     }
+
+    if (imagen) {
+      const currentImageUrl = category.imagen;
+      if (currentImageUrl) {
+        const publicId = this.extractPublicId(currentImageUrl);
+        if (publicId) {
+          await this.cloudinaryService.deleteFile(publicId);
+        }
+      }
+
+      const uploadResult = await this.cloudinaryService.uploadFile(imagen);
+      category.imagen = uploadResult.secure_url;
+    }
+    Object.assign(category, updateCategoryDto);
+
     const updatedCategory = await this.categoryRepository.save(category);
+
     return {
       message: 'Categoría actualizada con éxito',
       category: updatedCategory,
@@ -92,36 +107,6 @@ export class CategoryService {
     const regex = /\/([^\/]+)\.\w+$/;
     const match = imageUrl.match(regex);
     return match ? match[1] : null;
-  }
-
-  async updateImagen(
-    id: any,
-    imagen: Express.Multer.File,
-  ): Promise<{ message: string; category: Category }> {
-    const category = await this.categoryRepository.findOne({ where: { id } });
-
-    if (!category) {
-      throw new NotFoundException(`Categoria no encontrado`);
-    }
-
-    const currentImageUrl = category.imagen;
-    if (currentImageUrl) {
-      const publicId = this.extractPublicId(currentImageUrl);
-      if (publicId) {
-        await this.cloudinaryService.deleteFile(publicId);
-      }
-    }
-
-    const uploadResult = await this.cloudinaryService.uploadFile(imagen);
-
-    category.imagen = uploadResult.secure_url;
-
-    const updatedCategory = await this.categoryRepository.save(category);
-
-    return {
-      message: 'Imagen actualizada con éxito',
-      category: updatedCategory,
-    };
   }
 
   async remove(id: any): Promise<{ message: string }> {
@@ -144,3 +129,6 @@ export class CategoryService {
   }
 
 }
+
+
+

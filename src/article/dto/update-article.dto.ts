@@ -26,7 +26,7 @@ export class UpdateArticleDto {
   discount?: number;
 
   @ApiProperty({
-    description: 'Imágenes del artículo',
+    description: 'Nuevas imágenes a subir',
     type: 'array',
     items: { type: 'string', format: 'binary' },
   })

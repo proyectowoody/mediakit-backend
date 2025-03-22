@@ -43,18 +43,13 @@ export class CategoryController {
 
   @Patch(':id')
   @UseGuards(AuthGuard)
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoryService.update(+id, updateCategoryDto);
-  }
-
-  @Patch(':id/imagen')
-  @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('imagen'))
-  async updateImagen(
+  async updateCategory(
     @Param('id') id: string,
-    @UploadedFile() imagen: Express.Multer.File,
+    @Body() updateCategoryDto: UpdateCategoryDto,
+    @UploadedFile() imagen?: Express.Multer.File
   ) {
-    return this.categoryService.updateImagen(id, imagen);
+    return this.categoryService.updateCategory(+id, updateCategoryDto, imagen);
   }
 
   @Delete(':id')
@@ -63,3 +58,6 @@ export class CategoryController {
     return this.categoryService.remove(+id);
   }
 }
+
+
+

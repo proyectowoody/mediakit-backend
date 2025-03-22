@@ -16,6 +16,7 @@ export class AddressService {
   ) {}
 
   async create(email: string, createAddressDto: CreateAddressDto) {
+    
     const user = await this.userService.findByEmail(email);
 
     if (!user) {

@@ -5,6 +5,7 @@ import * as streamifier from 'streamifier';
 
 @Injectable()
 export class CloudinaryService {
+
   async uploadFile(
     file: Express.Multer.File,
   ): Promise<CloudinaryResponse> {

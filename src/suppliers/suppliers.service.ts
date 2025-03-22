@@ -70,68 +70,44 @@ export class SuppliersService {
     };
   }
 
-  async update(
-    id: number,
-    updateSupplierDto: UpdateSupplierDto,
-  ): Promise<{ message: string; supplier: Supplier }> {
-    try {
-      const supplier = await this.supplierRepository.preload({
-        id,
-        ...updateSupplierDto,
-      });
-
+  async updateSup(
+      id: number,
+      updateSupplierDto: UpdateSupplierDto,
+      imagen?: Express.Multer.File
+    ): Promise<{ message: string; category: Supplier }> {
+      const supplier = await this.supplierRepository.findOne({ where: { id } });
+  
       if (!supplier) {
-        throw new NotFoundException(`Proveedor no encontrado.`);
+        throw new NotFoundException(`Categoría no encontrada.`);
       }
-
-      const updatedSupplier = await this.supplierRepository.save(supplier);
-
+  
+      if (imagen) {
+        const currentImageUrl = supplier.imagen;
+        if (currentImageUrl) {
+          const publicId = this.extractPublicId(currentImageUrl);
+          if (publicId) {
+            await this.cloudinaryService.deleteFile(publicId);
+          }
+        }
+  
+        const uploadResult = await this.cloudinaryService.uploadFile(imagen);
+        supplier.imagen = uploadResult.secure_url;
+      }
+      Object.assign(supplier, updateSupplierDto);
+  
+      const updatedCategory = await this.supplierRepository.save(supplier);
+  
       return {
-        message: 'Proveedor actualizado con éxito',
-        supplier: updatedSupplier,
+        message: 'Proveedor actualizada con éxito',
+        category: updatedCategory,
       };
-    } catch (error) {
-      throw new InternalServerErrorException(
-        `Error al actualizar el proveedor: ${error.message}`,
-      );
     }
-  }
-
-  private extractPublicId(imageUrl: string): string | null {
-    const regex = /\/([^\/]+)\.\w+$/;
-    const match = imageUrl.match(regex);
-    return match ? match[1] : null;
-  }
-
-  async updateImagen(
-    id: any,
-    imagen: Express.Multer.File,
-  ): Promise<{ message: string; supplier: Supplier }> {
-    const supplier = await this.supplierRepository.findOne({ where: { id } });
-
-    if (!supplier) {
-      throw new NotFoundException(`Categoria no encontrado`);
+  
+    private extractPublicId(imageUrl: string): string | null {
+      const regex = /\/([^\/]+)\.\w+$/;
+      const match = imageUrl.match(regex);
+      return match ? match[1] : null;
     }
-
-    const currentImageUrl = supplier.imagen;
-    if (currentImageUrl) {
-      const publicId = this.extractPublicId(currentImageUrl);
-      if (publicId) {
-        await this.cloudinaryService.deleteFile(publicId);
-      }
-    }
-
-    const uploadResult = await this.cloudinaryService.uploadFile(imagen);
-
-    supplier.imagen = uploadResult.secure_url;
-
-    const updatedCategory = await this.supplierRepository.save(supplier);
-
-    return {
-      message: 'Imagen actualizada con éxito',
-      supplier: updatedCategory,
-    };
-  }
 
   async remove(id: any): Promise<{ message: string }> {
     const supplier = await this.supplierRepository.findOne({ where: { id } });

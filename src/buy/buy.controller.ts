@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common';
 import { BuyService } from './buy.service';
 import { AuthGuard } from 'src/user/guard/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
@@ -8,9 +8,10 @@ import { ApiTags } from '@nestjs/swagger';
 export class BuyController {
   constructor(private readonly buyService: BuyService) { }
 
-  @Get(':email')
+  @Get()
   @UseGuards(AuthGuard)
-  async findOne(@Param('email') email: string) {
+  async findOne(@Request() req) {
+    const email = req.user.email;
     return this.buyService.findOne(email);
   }
 

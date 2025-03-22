@@ -5,7 +5,7 @@ import { Article } from './entities/article.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CloudinaryService } from 'src/cloudinay/cloudinay.service';
-import { ArticleImage } from './entities/articleImage.entity';
+import { ArticleImage } from './entities/article-image.entity';
 
 @Injectable()
 export class ArticleService {
@@ -39,7 +39,61 @@ export class ArticleService {
     });
   }
 
+  async updateArticle(
+    id: any,
+    updateArticulo: UpdateArticleDto,
+  ): Promise<{ message: string; articulo: Article }> {
+    try {
+      const articulo = await this.articuloRepository.findOne({ where: { id } });
+
+      if (!articulo) {
+        throw new NotFoundException(`Artículo no encontrado`);
+      }
+      const updatedArticulo = Object.assign(articulo, updateArticulo);
+      await this.articuloRepository.save(updatedArticulo);
+
+      return {
+        message: 'Artículo actualizado correctamente',
+        articulo: updatedArticulo,
+      };
+    } catch (error) {
+      console.error('Error al actualizar el artículo:', error);
+      throw new Error('No se pudo actualizar el artículo');
+    }
+  }
+
+  async updateImagen(id: any, imagen: Express.Multer.File[]) {
+    try {
+      const articulo = await this.articuloRepository.findOne({
+        where: { id },
+        relations: ['imagenes'],
+      });
+
+      if (!articulo) {
+        throw new NotFoundException(`Artículo no encontrado`);
+      }
+
+      if (imagen && imagen.length > 0) {
+        for (const imagenFile of imagen) {
+          const uploadResult = await this.cloudinaryService.uploadFile(imagenFile);
+
+          const nuevaImagen = this.articleImageRepository.create({
+            url: uploadResult.secure_url,
+            article: articulo,
+          });
+
+          await this.articleImageRepository.save(nuevaImagen);
+        }
+      }
+      return;
+    } catch (error) {
+      console.error('Error al actualizar la imagen:', error);
+      throw new Error('No se pudo actualizar la imagen');
+    }
+  }
+
   async createArticle(article: CreateArticleDto & { imagenes: Express.Multer.File[] }) {
+
     const articleFound = await this.articuloRepository.findOne({
       where: { nombre: article.nombre },
     });
@@ -91,29 +145,13 @@ export class ArticleService {
     };
   }
 
-  async updateArticle(
-    id: any,
-    updateArticulo: UpdateArticleDto,
-  ): Promise<{ message: string; articulo: Article }> {
-    const articulo = await this.articuloRepository.findOne({ where: { id } });
-    if (!articulo) {
-      throw new NotFoundException(`Artículo no encontrada`);
-    }
-
-    const updatedArticulo = Object.assign(articulo, updateArticulo);
-    await this.articuloRepository.save(updatedArticulo);
-    return {
-      message: 'Artículo actualizada con éxito',
-      articulo: updatedArticulo,
-    };
-  }
-
   async updateArticleDiscount(
     id: any,
     updateArticulo: UpdateArticleDto,
   ): Promise<{ message: string; articulo: Article }> {
 
     const articulo = await this.articuloRepository.findOne({ where: { id } });
+    
     if (!articulo) {
       throw new NotFoundException(`Artículo no encontrado`);
     }
@@ -134,49 +172,11 @@ export class ArticleService {
     };
   }
 
-  async updateImagen(
-    id: any,
-    imagen: Express.Multer.File,
-  ): Promise<{ message: string; articulo: Article }> {
-    const articulo = await this.articuloRepository.findOne({
-      where: { id },
-      relations: ['imagenes'],
-    });
-
-    if (!articulo) {
-      throw new NotFoundException(`Artículo no encontrado`);
-    }
-
-    if (articulo.imagenes.length > 0) {
-      const imagenAEliminar = articulo.imagenes[0];
-      const publicId = this.extractPublicId(imagenAEliminar.url);
-      if (publicId) {
-        await this.cloudinaryService.deleteFile(publicId);
-      }
-
-      await this.articleImageRepository.remove(imagenAEliminar);
-    }
-
-    const uploadResult = await this.cloudinaryService.uploadFile(imagen);
-
-    const nuevaImagen = this.articleImageRepository.create({
-      url: uploadResult.secure_url,
-      article: articulo,
-    });
-
-    await this.articleImageRepository.save(nuevaImagen);
-
-    return {
-      message: 'Imagen actualizada con éxito',
-      articulo,
-    };
-  }
-
   async removeOffer(id: number): Promise<{ message: string }> {
     const articulo = await this.articuloRepository.findOne({ where: { id } });
 
     if (!articulo) {
-      throw new NotFoundException(`Artículo con id ${id} no encontrado`);
+      throw new NotFoundException(`Artículo no encontrado`);
     }
 
     if (articulo.offer) {
@@ -189,12 +189,6 @@ export class ArticleService {
     return { message: 'El artículo no estaba en oferta' };
   }
 
-  private extractPublicId(imageUrl: string): string | null {
-    const regex = /\/([^\/]+)\.\w+$/;
-    const match = imageUrl.match(regex);
-    return match ? match[1] : null;
-  }
-
   async deleteArticle(id: any): Promise<{ message: string }> {
     const articulo = await this.articuloRepository.findOne({
       where: { id },
@@ -202,7 +196,7 @@ export class ArticleService {
     });
 
     if (!articulo) {
-      throw new NotFoundException(`Artículo con id ${id} no encontrado`);
+      throw new NotFoundException(`Artículo no encontrado`);
     }
 
     for (const imagen of articulo.imagenes) {
@@ -211,7 +205,7 @@ export class ArticleService {
         try {
           await this.cloudinaryService.deleteFile(publicId);
         } catch (error) {
-          console.error(`Error al eliminar la imagen ${publicId}:`, error);
+          console.error(`Error al eliminar la imagen`, error);
         }
       }
     }
@@ -221,5 +215,43 @@ export class ArticleService {
     return { message: 'Artículo e imágenes eliminados con éxito' };
   }
 
+  async deleteArticleImage(imageUrl: string) {
+
+    const image = await this.articleImageRepository.findOne({
+      where: { url: imageUrl },
+    });
+
+    if (!image) {
+      throw new NotFoundException('La imagen no existe en la base de datos');
+    }
+
+    const publicId = this.extractPublicId(image.url);
+
+    if (publicId) {
+      try {
+        await this.cloudinaryService.deleteFile(publicId);
+      } catch (error) {
+        console.error(`Error al eliminar la imagen en Cloudinary`, error);
+        throw new HttpException(
+          'Error al eliminar la imagen en Cloudinary',
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+    }
+
+    await this.articleImageRepository.delete(image.id);
+
+  }
+
+  private extractPublicId(imageUrl: string): string | null {
+    const regex = /\/([^\/]+)\.\w+$/;
+    const match = imageUrl.match(regex);
+    return match ? match[1] : null;
+  }
 
 }
+
+
+
+
+

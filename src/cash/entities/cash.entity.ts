@@ -1,26 +1,25 @@
-
-import { Article } from 'src/article/entities/article.entity';
 import { User } from 'src/user/entities/user.entity';
+
 import {
   Entity,
   PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
 } from 'typeorm';
 
-@Entity('carmediakit')
-export class Car {
+@Entity('cashmediakit')
+export class Cash {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.car, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, (user) => user.cash, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => Article, (articulo) => articulo.car, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'articulo_id' })
-  article: Article;
+  @Column({ type: 'varchar', length: 500 })
+  cash: string;
 
   @CreateDateColumn({ type: 'timestamp' })
   fecha: Date;

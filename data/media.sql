@@ -2,14 +2,18 @@
 DROP TABLE IF EXISTS article_images;
 DROP TABLE IF EXISTS detailbuymediakit;
 DROP TABLE IF EXISTS favoritemediakit;
+DROP TABLE IF EXISTS cashmediakit;
 DROP TABLE IF EXISTS carmediakit;
 DROP TABLE IF EXISTS commentmediakit;
-DROP TABLE IF EXISTS buymediakit;
 DROP TABLE IF EXISTS addressmediakit;
+DROP TABLE IF EXISTS buymediakit;
+DROP TABLE IF EXISTS blog_images;
+DROP TABLE IF EXISTS blogmediakit;
 DROP TABLE IF EXISTS articlemediakit;
 DROP TABLE IF EXISTS subcategorymediakit;
 DROP TABLE IF EXISTS categorymediakit;
 DROP TABLE IF EXISTS suppliersmediakit;
+DROP TABLE IF EXISTS usermediakit;
 
 CREATE TABLE usermediakit (
     id INT NOT NULL AUTO_INCREMENT,
@@ -56,11 +60,12 @@ CREATE TABLE articlemediakit (
     supplier_id INT NOT NULL,
     nombre VARCHAR(255) NOT NULL,
     descripcion TEXT NOT NULL,
-    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     estado VARCHAR(255) NOT NULL,
     precio INT NOT NULL,
-    offer BOOLEAN NOT NULL DEFAULT 0,
     discount INT NOT NULL DEFAULT 0,
+    precioActual INT NOT NULL DEFAULT 0,
+    offer BOOLEAN NOT NULL DEFAULT 0,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY (categoria_id) REFERENCES categorymediakit(id) ON DELETE CASCADE,
     FOREIGN KEY (supplier_id) REFERENCES suppliersmediakit(id) ON DELETE CASCADE
@@ -92,6 +97,15 @@ CREATE TABLE carmediakit (
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES usermediakit(id) ON DELETE CASCADE,
     FOREIGN KEY (articulo_id) REFERENCES articlemediakit(id) ON DELETE CASCADE
+);
+
+CREATE TABLE cashmediakit (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    cash VARCHAR(500) NOT NULL,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES usermediakit(id) ON DELETE CASCADE
 );
 
 CREATE TABLE buymediakit (
@@ -131,12 +145,31 @@ CREATE TABLE addressmediakit (
 CREATE TABLE commentmediakit (
     id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
-    buy_id INT NOT NULL,
     descripcion TEXT NOT NULL,
     fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES usermediakit(id) ON DELETE CASCADE,
-    FOREIGN KEY (buy_id) REFERENCES buymediakit(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES usermediakit(id) ON DELETE CASCADE
 );
+
+CREATE TABLE blogmediakit (
+    id INT NOT NULL AUTO_INCREMENT,
+    titulo VARCHAR(50) NOT NULL, 
+    descripcion TEXT NOT NULL,
+    slug VARCHAR(50) NOT NULL, 
+    categoria VARCHAR(50) NOT NULL, 
+    contenido TEXT NOT NULL,
+    fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE blog_images (
+    id INT NOT NULL AUTO_INCREMENT,
+    blog_id INT NOT NULL,
+    url VARCHAR(500) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (blog_id) REFERENCES blogmediakit(id) ON DELETE CASCADE
+);
+
+
 
 

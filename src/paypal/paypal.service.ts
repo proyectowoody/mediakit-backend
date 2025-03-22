@@ -40,7 +40,7 @@ export class PaypalService {
           landing_page: 'NO_PREFERENCE',
           user_action: 'PAY_NOW',
           return_url: `${URL_BACKEND}/paypal/capture?email=${email}`,
-          cancel_url: `${URL_FRONTEND}/cart`,
+          cancel_url: `${URL_FRONTEND}/carrito`,
         },
       };
 
@@ -83,6 +83,7 @@ export class PaypalService {
   }
 
   async capturePayment(token: string, email: string): Promise<any> {
+
     try {
       await axios.post(
         `${process.env.URL_PAYPAL_ORDERS}/${token}/capture`,
@@ -96,7 +97,6 @@ export class PaypalService {
       );
 
       const compras = await this.carService.findOne(email);
-
       const userEmail = compras.articles.length > 0 ? compras.articles[0].userEmail : null;
       const buy = await this.buyService.create(userEmail);
 

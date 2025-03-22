@@ -16,6 +16,9 @@ import { AddressModule } from './address/address.module';
 import { CommentModule } from './comment/comment.module';
 import { ContactModule } from './contact/contact.module';
 import { SubcategoryModule } from './subcategory/subcategory.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CashModule } from './cash/cash.module';
+import { BlogModule } from './blog/blog.module';
 import 'dotenv/config';
 
 @Module({
@@ -30,10 +33,11 @@ import 'dotenv/config';
       database: process.env.DB_DATABASE,
       connectTimeout: 60000,
       entities: [join(__dirname + '/**/*.entity{.ts,.js}')],
-      synchronize: true,
+      synchronize: false,
       // logging: true,
       ssl: { rejectUnauthorized: false },
     }),
+    ScheduleModule.forRoot(),
     UserModule,
     CategoryModule,
     ArticleModule,
@@ -47,7 +51,11 @@ import 'dotenv/config';
     AddressModule,
     CommentModule,
     ContactModule,
-    SubcategoryModule
+    SubcategoryModule,
+    CashModule,
+    BlogModule
   ],
 })
 export class AppModule { }
+
+

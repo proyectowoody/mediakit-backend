@@ -43,18 +43,13 @@ export class SuppliersController {
 
   @Patch(':id')
   @UseGuards(AuthGuard)
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateSupplierDto) {
-    return this.suppliersService.update(+id, updateCategoryDto);
-  }
-
-  @Patch(':id/imagen')
-  @UseGuards(AuthGuard)
   @UseInterceptors(FileInterceptor('imagen'))
-  async updateImagen(
+  async updateCategory(
     @Param('id') id: string,
-    @UploadedFile() imagen: Express.Multer.File,
+    @Body() updateCategoryDto: UpdateSupplierDto,
+    @UploadedFile() imagen?: Express.Multer.File
   ) {
-    return this.suppliersService.updateImagen(id, imagen);
+    return this.suppliersService.updateSup(+id, updateCategoryDto, imagen);
   }
 
   @Delete(':id')

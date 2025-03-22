@@ -18,7 +18,7 @@ export class GoogleController {
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res) {
     const userData = await this.GoogleService.googleLogin(req);
-    res.redirect(`${URL_FRONTEND}/?token=${userData.token}`);
+    res.redirect(`${URL_FRONTEND}/iniciar-sesion/?token=${userData.token}`);
   }
 }
 

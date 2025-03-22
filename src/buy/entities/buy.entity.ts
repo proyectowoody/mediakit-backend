@@ -24,7 +24,4 @@ export class Buy  {
 
     @OneToMany(() => Detailbuy, (detail) => detail.buy)
     details: Detailbuy[];  
-
-    @OneToMany(() => Comment, (comment) => comment.buy)
-    comment: Comment[];  
 }

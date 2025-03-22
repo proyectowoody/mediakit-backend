@@ -45,6 +45,7 @@ export class FavoriteService {
   ): Promise<{ message: string; articulo_id: number }> {
 
     const { articulo_id, email_user } = createFavoritoDto;
+
     const user = await this.userService.findByEmail(email_user);
     if (!user) {
       throw new BadRequestException('Usuario no encontrado.');

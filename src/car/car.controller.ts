@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Request } from '@nestjs/common';
 import { CarService } from './car.service';
 import { CreateCarDto } from './dto/create-car.dto';
 import { ApiTags } from '@nestjs/swagger';
@@ -9,32 +9,44 @@ import { AuthGuard } from 'src/user/guard/auth.guard';
 export class CarController {
   constructor(private readonly carService: CarService) { }
 
-  @Get(':email')
+  @Get()
   @UseGuards(AuthGuard)
-  async findOne(@Param('email') email: string): Promise<{ articles: any[]; total: number }> {
+  async findOne(@Request() req): Promise<{ articles: any[]; total: number }> {
+    const email = req.user.email;
     return this.carService.findOne(email);
   }
 
   @Post()
   @UseGuards(AuthGuard)
-  carPost(@Body() carDto: CreateCarDto) {
-    return this.carService.create(carDto);
+  carPost(@Request() req, @Body() body: { articulo_id: number }) {
+    const email = req.user.email;
+    return this.carService.create({articulo_id: body.articulo_id, email_user: email });
   }
 
-  @Get('count/:email')
+  @Get('/count')
   @UseGuards(AuthGuard)
-  countUserCartItems(@Param('email') email: string) {
+  countUserCartItems(@Request() req) {
+    const email = req.user.email;
     return this.carService.countUserCartItems(email);
   }
 
   @Delete()
   @UseGuards(AuthGuard)
   async remove(
-    @Query('articulo_id') articulo_id: number,
-    @Query('email_user') email_user: string,
+    @Query('articulo_id') articulo_id: number, @Request() req
   ): Promise<{ message: string }> {
-
+    const email_user = req.user.email;
     return this.carService.remove(articulo_id, email_user);
   }
 
+  @Delete('me')
+  @UseGuards(AuthGuard)
+  async removeCartArticle(
+    @Query('dat') dat: string,
+    @Query('articulo_id') articulo_id: number,
+    @Request() req
+  ) {
+    const email_user = req.user.email;
+    return this.carService.removeCartArticle(articulo_id, dat, email_user);
+  }
 }
