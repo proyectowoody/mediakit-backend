@@ -34,9 +34,9 @@ async function bootstrap() {
   });
 
   app.use(cookieParser());
-  
+
   app.enableCors({
-    origin: `${URL_FRONTEND}`,
+    origin: 'https://respectful-shoes.netlify.app',
     credentials: true,
   });
 
