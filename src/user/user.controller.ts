@@ -21,7 +21,6 @@ import { UserService } from './user.service';
 import { AuthGuard } from './guard/auth.guard';
 import { Response as ExpressResponse } from 'express';
 import { isProduction } from 'src/url';
-import * as jose from 'jose';
 
 @ApiTags('Users')
 @Controller('users')
@@ -90,15 +89,15 @@ export class UserController {
         throw new UnauthorizedException("Token no proporcionado");
       }
 
+      const { compactDecrypt } = await import('jose');
+
       let secret = process.env.JWT_SECRET;
-      if (!secret) {
-        throw new Error('JWT_SECRET no está definido');
-      }
+      if (!secret) throw new Error('JWT_SECRET no está definido');
 
       secret = secret.padEnd(32, '0').slice(0, 32);
       const encodedSecret = new TextEncoder().encode(secret);
 
-      const decrypted = await jose.compactDecrypt(body.token, encodedSecret);
+      const decrypted = await compactDecrypt(body.token, encodedSecret);
       const payload = JSON.parse(new TextDecoder().decode(decrypted.plaintext));
 
       const token = await this.userService.token(payload.email);
@@ -125,15 +124,15 @@ export class UserController {
         throw new UnauthorizedException("Token no proporcionado");
       }
 
+      const { compactDecrypt } = await import('jose');
+
       let secret = process.env.JWT_SECRET;
-      if (!secret) {
-        throw new Error('JWT_SECRET no está definido');
-      }
+      if (!secret) throw new Error('JWT_SECRET no está definido');
 
       secret = secret.padEnd(32, '0').slice(0, 32);
       const encodedSecret = new TextEncoder().encode(secret);
 
-      const decrypted = await jose.compactDecrypt(token, encodedSecret);
+      const decrypted = await compactDecrypt(token, encodedSecret);
       const payload = JSON.parse(new TextDecoder().decode(decrypted.plaintext));
 
       const user = await this.userService.findByEmail(payload.email);
@@ -157,7 +156,6 @@ export class UserController {
       throw new UnauthorizedException("Token inválido o expirado");
     }
   }
-
 
 }
 

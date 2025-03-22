@@ -6,30 +6,28 @@ import {
   ForbiddenException
 } from "@nestjs/common";
 import { Request } from "express";
-import * as jose from "jose";
 import 'dotenv/config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
-
-    const token = request.cookies?.ACCESS_TOKEN; 
+    const token = request.cookies?.ACCESS_TOKEN;
 
     if (!token) {
       throw new UnauthorizedException("Usuario no autenticado");
     }
 
     try {
-      let secret = process.env.JWT_SECRET;
-      if (!secret) {
-        throw new Error('JWT_SECRET no está definido');
-      }
+      const { compactDecrypt } = await import('jose'); 
 
-      secret = secret.padEnd(32, '0').slice(0, 32); 
+      let secret = process.env.JWT_SECRET;
+      if (!secret) throw new Error('JWT_SECRET no está definido');
+
+      secret = secret.padEnd(32, '0').slice(0, 32);
       const encodedSecret = new TextEncoder().encode(secret);
 
-      const decrypted = await jose.compactDecrypt(token, encodedSecret);
+      const decrypted = await compactDecrypt(token, encodedSecret);
       const payload = JSON.parse(new TextDecoder().decode(decrypted.plaintext));
 
       (request as any).user = payload;

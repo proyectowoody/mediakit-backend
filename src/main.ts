@@ -4,7 +4,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
 import { useContainer } from 'class-validator';
-import * as cookieParser from 'cookie-parser';
+import cookieParser = require('cookie-parser');
 import { URL_FRONTEND } from './url';
 import 'dotenv/config';
 

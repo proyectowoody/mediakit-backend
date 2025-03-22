@@ -17,7 +17,6 @@ import { PasswordDto } from './dto/passwordDto';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/userDto';
 import { URL_FRONTEND } from '../url';
-import * as jose from 'jose';
 import 'dotenv/config';
 
 @Injectable()
@@ -97,7 +96,7 @@ export class UserService {
       throw new UnauthorizedException('Su cuenta no está verificada');
     }
 
-    const payload: jose.JWTPayload = {
+    const payload = {
       email,
       user: user.role,
       iat: Math.floor(Date.now() / 1000),
@@ -147,7 +146,7 @@ export class UserService {
 
     await this.usersRepository.update({ email }, { isVerified: true });
 
-    const payload: jose.JWTPayload = {
+    const payload = {
       email,
       user: user.role,
       iat: Math.floor(Date.now() / 1000),
@@ -196,20 +195,22 @@ export class UserService {
 
   }
 
-  async encryptToken(payload: jose.JWTPayload): Promise<string> {
+  async encryptToken(payload): Promise<string> {
     let secret = process.env.JWT_SECRET;
-
+  
     if (!secret) {
       throw new Error('JWT_SECRET no está definido');
     }
-
+  
     secret = secret.padEnd(32, '0').slice(0, 32);
     const encodedSecret = new TextEncoder().encode(secret);
-
-    return await new jose.EncryptJWT(payload)
+  
+    const { EncryptJWT } = await import('jose'); 
+  
+    return await new EncryptJWT(payload)
       .setProtectedHeader({ alg: 'dir', enc: 'A256GCM' })
       .setExpirationTime('1h')
       .encrypt(encodedSecret);
-  }
+  }  
 
 }

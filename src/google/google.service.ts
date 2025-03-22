@@ -3,7 +3,6 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from "bcryptjs";
 import { UserService } from 'src/user/user.service';
 import 'dotenv/config';
-import * as jose from 'jose';
 
 @Injectable()
 export class GoogleService {
@@ -60,21 +59,21 @@ export class GoogleService {
 
   private async generateToken(user): Promise<string> {
     try {
-      const payload: jose.JWTPayload = {
+      const payload = {
         email: user.email,
         user: user.role,
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 3600,
       };
-
+  
       return await this.encryptToken(payload);
     } catch (error) {
       console.error("Error al generar el token:", error);
       throw new InternalServerErrorException("Error al generar el token de autenticación.");
     }
-  }
+  }  
 
-  async encryptToken(payload: jose.JWTPayload): Promise<string> {
+  async encryptToken(payload): Promise<string> {
     let secret = process.env.JWT_SECRET;
 
     if (!secret) {
@@ -84,9 +83,12 @@ export class GoogleService {
     secret = secret.padEnd(32, '0').slice(0, 32);
     const encodedSecret = new TextEncoder().encode(secret);
 
-    return await new jose.EncryptJWT(payload)
+    const { EncryptJWT } = await import('jose');
+
+    return await new EncryptJWT(payload)
       .setProtectedHeader({ alg: 'dir', enc: 'A256GCM' })
       .setExpirationTime('1h')
       .encrypt(encodedSecret);
   }
+
 }
