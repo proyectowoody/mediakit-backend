@@ -196,24 +196,6 @@ export class UserService {
 
   }
 
-  // async encryptToken(payload): Promise<string> {
-  //   let secret = process.env.JWT_SECRET;
-
-  //   if (!secret) {
-  //     throw new Error('JWT_SECRET no está definido');
-  //   }
-
-  //   secret = secret.padEnd(32, '0').slice(0, 32);
-  //   const encodedSecret = new TextEncoder().encode(secret);
-
-  //   const { EncryptJWT } = await import('jose'); 
-
-  //   return await new EncryptJWT(payload)
-  //     .setProtectedHeader({ alg: 'dir', enc: 'A256GCM' })
-  //     .setExpirationTime('1h')
-  //     .encrypt(encodedSecret);
-  // } 
-
   async encryptToken(payload: object): Promise<string> {
     const secret = process.env.JWT_SECRET;
     if (!secret) throw new Error('JWT_SECRET no definido');
