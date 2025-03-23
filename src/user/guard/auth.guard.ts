@@ -6,6 +6,7 @@ import {
   ForbiddenException
 } from "@nestjs/common";
 import { Request } from "express";
+import * as crypto from "crypto";
 import 'dotenv/config';
 
 @Injectable()
@@ -19,17 +20,26 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const { compactDecrypt } = await import('jose'); 
-
-      let secret = process.env.JWT_SECRET;
+      const secret = process.env.JWT_SECRET;
       if (!secret) throw new Error('JWT_SECRET no está definido');
 
-      secret = secret.padEnd(32, '0').slice(0, 32);
-      const encodedSecret = new TextEncoder().encode(secret);
+      const key = crypto
+        .createHash('sha256')
+        .update(secret)
+        .digest();
 
-      const decrypted = await compactDecrypt(token, encodedSecret);
-      const payload = JSON.parse(new TextDecoder().decode(decrypted.plaintext));
+      const [ivB64, authTagB64, encryptedB64] = token.split('.');
+      const iv = Buffer.from(ivB64, 'base64');
+      const authTag = Buffer.from(authTagB64, 'base64');
+      const encrypted = Buffer.from(encryptedB64, 'base64');
 
+      const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+      decipher.setAuthTag(authTag);
+
+      let decrypted = decipher.update(encrypted, undefined, 'utf8');
+      decrypted += decipher.final('utf8');
+
+      const payload = JSON.parse(decrypted);
       (request as any).user = payload;
 
       this.validateRole(request);

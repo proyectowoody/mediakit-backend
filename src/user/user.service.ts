@@ -18,6 +18,7 @@ import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/userDto';
 import { URL_FRONTEND } from '../url';
 import 'dotenv/config';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class UserService {
@@ -52,7 +53,7 @@ export class UserService {
       throw new BadRequestException('Ingrese un correo válido.');
     }
 
-    const userCount = await this.usersRepository.count(); 
+    const userCount = await this.usersRepository.count();
 
     const hashedPassword = await bcryptjs.hash(password, 10);
     const isFirstUser = userCount === 0;
@@ -195,22 +196,46 @@ export class UserService {
 
   }
 
-  async encryptToken(payload): Promise<string> {
-    let secret = process.env.JWT_SECRET;
-  
-    if (!secret) {
-      throw new Error('JWT_SECRET no está definido');
-    }
-  
-    secret = secret.padEnd(32, '0').slice(0, 32);
-    const encodedSecret = new TextEncoder().encode(secret);
-  
-    const { EncryptJWT } = await import('jose'); 
-  
-    return await new EncryptJWT(payload)
-      .setProtectedHeader({ alg: 'dir', enc: 'A256GCM' })
-      .setExpirationTime('1h')
-      .encrypt(encodedSecret);
-  }  
+  // async encryptToken(payload): Promise<string> {
+  //   let secret = process.env.JWT_SECRET;
+
+  //   if (!secret) {
+  //     throw new Error('JWT_SECRET no está definido');
+  //   }
+
+  //   secret = secret.padEnd(32, '0').slice(0, 32);
+  //   const encodedSecret = new TextEncoder().encode(secret);
+
+  //   const { EncryptJWT } = await import('jose'); 
+
+  //   return await new EncryptJWT(payload)
+  //     .setProtectedHeader({ alg: 'dir', enc: 'A256GCM' })
+  //     .setExpirationTime('1h')
+  //     .encrypt(encodedSecret);
+  // } 
+
+  async encryptToken(payload: object): Promise<string> {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error('JWT_SECRET no definido');
+
+    const key = crypto
+      .createHash('sha256')
+      .update(secret)
+      .digest();
+
+    const iv = crypto.randomBytes(16); 
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+
+    const json = JSON.stringify(payload);
+    let encrypted = cipher.update(json, 'utf8', 'base64');
+    encrypted += cipher.final('base64');
+    const authTag = cipher.getAuthTag();
+
+    return [
+      iv.toString('base64'),
+      authTag.toString('base64'),
+      encrypted,
+    ].join('.');
+  }
 
 }

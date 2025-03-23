@@ -21,6 +21,7 @@ import { UserService } from './user.service';
 import { AuthGuard } from './guard/auth.guard';
 import { Response as ExpressResponse } from 'express';
 import { isProduction } from 'src/url';
+import * as crypto from 'crypto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -89,23 +90,33 @@ export class UserController {
         throw new UnauthorizedException("Token no proporcionado");
       }
 
-      const { compactDecrypt } = await import('jose');
-
-      let secret = process.env.JWT_SECRET;
+      const secret = process.env.JWT_SECRET;
       if (!secret) throw new Error('JWT_SECRET no está definido');
 
-      secret = secret.padEnd(32, '0').slice(0, 32);
-      const encodedSecret = new TextEncoder().encode(secret);
+      const key = crypto
+        .createHash('sha256')
+        .update(secret)
+        .digest();
 
-      const decrypted = await compactDecrypt(body.token, encodedSecret);
-      const payload = JSON.parse(new TextDecoder().decode(decrypted.plaintext));
+      const [ivB64, authTagB64, encryptedB64] = body.token.split('.');
+      const iv = Buffer.from(ivB64, 'base64');
+      const authTag = Buffer.from(authTagB64, 'base64');
+      const encrypted = Buffer.from(encryptedB64, 'base64');
+
+      const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+      decipher.setAuthTag(authTag);
+
+      let decrypted = decipher.update(encrypted, undefined, 'utf8');
+      decrypted += decipher.final('utf8');
+
+      const payload = JSON.parse(decrypted);
 
       const token = await this.userService.token(payload.email);
 
       res.cookie('ACCESS_TOKEN', token, {
         httpOnly: true,
         secure: isProduction,
-        sameSite: isProduction ? "none" : "lax",
+        sameSite: isProduction ? 'none' : 'lax',
         maxAge: 60 * 60 * 1000,
       });
 

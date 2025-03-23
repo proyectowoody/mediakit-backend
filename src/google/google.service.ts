@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcryptjs from "bcryptjs";
 import { UserService } from 'src/user/user.service';
 import 'dotenv/config';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class GoogleService {
@@ -65,30 +66,38 @@ export class GoogleService {
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 3600,
       };
-  
+
       return await this.encryptToken(payload);
     } catch (error) {
       console.error("Error al generar el token:", error);
       throw new InternalServerErrorException("Error al generar el token de autenticación.");
     }
-  }  
+  }
 
-  async encryptToken(payload): Promise<string> {
-    let secret = process.env.JWT_SECRET;
-
+  async encryptToken(payload: object): Promise<string> {
+    const secret = process.env.JWT_SECRET;
     if (!secret) {
       throw new Error('JWT_SECRET no está definido');
     }
 
-    secret = secret.padEnd(32, '0').slice(0, 32);
-    const encodedSecret = new TextEncoder().encode(secret);
+    const key = crypto
+      .createHash('sha256')
+      .update(secret)
+      .digest();
 
-    const { EncryptJWT } = await import('jose');
+    const iv = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
 
-    return await new EncryptJWT(payload)
-      .setProtectedHeader({ alg: 'dir', enc: 'A256GCM' })
-      .setExpirationTime('1h')
-      .encrypt(encodedSecret);
+    const json = JSON.stringify(payload);
+    let encrypted = cipher.update(json, 'utf8', 'base64');
+    encrypted += cipher.final('base64');
+    const authTag = cipher.getAuthTag();
+
+    return [
+      iv.toString('base64'),
+      authTag.toString('base64'),
+      encrypted,
+    ].join('.');
   }
 
 }
