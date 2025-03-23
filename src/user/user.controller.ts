@@ -86,7 +86,10 @@ export class UserController {
   @Patch('tokens')
   async token(@Body() body: { token: string }, @Res() res: ExpressResponse) {
     try {
-      if (!body.token) {
+
+      const rawToken = decodeURIComponent(body.token);
+
+      if (!rawToken) {
         throw new UnauthorizedException("Token no proporcionado");
       }
 
@@ -98,7 +101,7 @@ export class UserController {
         .update(secret)
         .digest();
 
-      const [ivB64, authTagB64, encryptedB64] = body.token.split('.');
+      const [ivB64, authTagB64, encryptedB64] = rawToken.split('.');
       const iv = Buffer.from(ivB64, 'base64');
       const authTag = Buffer.from(authTagB64, 'base64');
       const encrypted = Buffer.from(encryptedB64, 'base64');
@@ -135,16 +138,28 @@ export class UserController {
         throw new UnauthorizedException("Token no proporcionado");
       }
 
-      const { compactDecrypt } = await import('jose');
+      const rawToken = decodeURIComponent(token.replace(/\s/g, '+'));
 
-      let secret = process.env.JWT_SECRET;
+      const secret = process.env.JWT_SECRET;
       if (!secret) throw new Error('JWT_SECRET no está definido');
 
-      secret = secret.padEnd(32, '0').slice(0, 32);
-      const encodedSecret = new TextEncoder().encode(secret);
+      const key = crypto
+        .createHash('sha256')
+        .update(secret)
+        .digest();
 
-      const decrypted = await compactDecrypt(token, encodedSecret);
-      const payload = JSON.parse(new TextDecoder().decode(decrypted.plaintext));
+      const [ivB64, authTagB64, encryptedB64] = rawToken.split('.');
+      const iv = Buffer.from(ivB64, 'base64');
+      const authTag = Buffer.from(authTagB64, 'base64');
+      const encrypted = Buffer.from(encryptedB64, 'base64');
+
+      const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+      decipher.setAuthTag(authTag);
+
+      let decrypted = decipher.update(encrypted, undefined, 'utf8');
+      decrypted += decipher.final('utf8');
+
+      const payload = JSON.parse(decrypted);
 
       const user = await this.userService.findByEmail(payload.email);
       if (!user) {
