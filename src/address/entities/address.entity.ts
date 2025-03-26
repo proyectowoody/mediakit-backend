@@ -11,29 +11,32 @@ export class Address {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ type: 'varchar', length: 255 })
-  calle: string;
-
-  @Column({ type: 'varchar', length: 10 })
-  numero: string;
-
-  @Column({ type: 'varchar', length: 50, nullable: true })
-  piso_puerta?: string;
-
-  @Column({ type: 'varchar', length: 5 })
-  codigo_postal: string;
-
-  @Column({ type: 'varchar', length: 100 })
-  ciudad: string;
+  @Column({ type: 'varchar', length: 50, default: 'España' })
+  pais: string;
 
   @Column({ type: 'varchar', length: 100 })
   provincia: string;
 
   @Column({ type: 'varchar', length: 100 })
-  comunidad_autonoma: string;
+  localidad: string;
 
-  @Column({ type: 'varchar', length: 50, default: 'España' })
-  pais: string;
+  @Column({ type: 'varchar', length: 5 })
+  codigo_postal: string;
+
+  @Column({ type: 'varchar', length: 255 })
+  tipo_via: string;
+
+  @Column({ type: 'boolean', default: false })
+  envio: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  facturacion: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  adicional: string;
+
+  @Column({ type: 'text', nullable: true })
+  indicacion: string;
 
   @CreateDateColumn()
   fecha: Date;

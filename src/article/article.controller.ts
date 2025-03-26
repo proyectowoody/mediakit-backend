@@ -17,6 +17,11 @@ export class ArticleController {
     return this.articleService.findAll();
   }
 
+  @Get('/all')
+  async findAllPlus(): Promise<Article[]> {
+    return this.articleService.findAllPlus();
+  }
+
   @Get('count')
   async countArticles() {
     return this.articleService.countArticles();
@@ -25,6 +30,11 @@ export class ArticleController {
   @Get("/ofertas")
   async findAllOfertas(): Promise<Article[]> {
     return this.articleService.findAllOffers();
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: number): Promise<Article> {
+    return this.articleService.findOneById(id);
   }
 
   @Post()
@@ -59,7 +69,7 @@ export class ArticleController {
 
   @Patch(':id')
   @UseGuards(AuthGuard)
-  @UseInterceptors(FilesInterceptor('imagenes', 10)) 
+  @UseInterceptors(FilesInterceptor('imagenes', 10))
   async update(
     @Param('id') id: string,
     @UploadedFiles() imagenes: Express.Multer.File[],
@@ -67,7 +77,7 @@ export class ArticleController {
   ) {
     await this.articleService.updateArticle(id, updateArt);
     await this.articleService.updateImagen(id, imagenes);
-   
+
     return { message: 'Artículo actualizado correctamente' };
   }
 

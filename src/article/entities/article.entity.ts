@@ -15,6 +15,7 @@ import { Car } from 'src/car/entities/car.entity';
 import { Supplier } from 'src/suppliers/entities/supplier.entity';
 import { Detailbuy } from 'src/detailbuy/entities/detailbuy.entity';
 import { ArticleImage } from './article-image.entity';
+import { Commentarticle } from 'src/commentarticle/entities/commentarticle.entity';
 
 @Entity('articlemediakit')
 export class Article {
@@ -65,6 +66,9 @@ export class Article {
 
   @OneToMany(() => Detailbuy, (detailbuy) => detailbuy.article)
   detailbuy: Detailbuy[];
+
+  @OneToMany(() => Commentarticle, (coment) => coment.article)
+  commentarticle: Commentarticle[];
 
   @OneToMany(() => ArticleImage, (image) => image.article, { cascade: true, eager: true })
   imagenes: ArticleImage[];

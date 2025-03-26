@@ -3,6 +3,7 @@ import { Buy } from 'src/buy/entities/buy.entity';
 import { Car } from 'src/car/entities/car.entity';
 import { Cash } from 'src/cash/entities/cash.entity';
 import { Comment } from 'src/comment/entities/comment.entity';
+import { Datauser } from 'src/datauser/entities/datauser.entity';
 import { Favorite } from 'src/favorite/entities/favorite.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
@@ -46,5 +47,8 @@ export class User {
 
   @OneToMany(() => Cash, (cash) => cash.user)
   cash: Cash[];
+
+  @OneToMany(() => Datauser, (user) => user.user)
+  datauser: Datauser[];
 
 }

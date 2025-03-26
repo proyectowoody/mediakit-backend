@@ -1,9 +1,9 @@
-
 import { Article } from 'src/article/entities/article.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
@@ -18,10 +18,13 @@ export class Car {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => Article, (articulo) => articulo.car, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Article, (article) => article.car, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'articulo_id' })
   article: Article;
 
-  @CreateDateColumn({ type: 'timestamp' })
+  @Column({ type: 'int', default: 0 })
+  discount?: number;
+
+  @CreateDateColumn({ type: 'datetime' }) // para que coincida con DATETIME de MySQL
   fecha: Date;
 }

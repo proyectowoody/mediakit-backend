@@ -33,4 +33,12 @@ export class CommentService {
     return await this.commentRepository.save(newComment);
   }
 
+  async deleteById(id: number) {
+    const result = await this.commentRepository.delete(id);
+    return {
+      message: result.affected ? 'Comentario eliminado correctamente' : 'Comentario no encontrado',
+    };
+  }
+
+
 }

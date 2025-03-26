@@ -100,4 +100,12 @@ export class FavoriteService {
     };
   }
 
+  async countFavoritosByArticleId(articulo_id: number): Promise<{ total: number }> {
+    const total = await this.favoritoRepository.count({
+      where: { article: { id: articulo_id } },
+    });
+
+    return { total };
+  }
+
 }

@@ -58,7 +58,6 @@ export class CashService {
       where: { user: { id: user.id } },
     });
 
-
     const userCurrency = cashData ? cashData.cash : 'EUR';
 
     const response = await axios.get(this.exchangeRateUrl);
@@ -70,6 +69,7 @@ export class CashService {
       currency: userCurrency,
       conversionRate: currencyRate,
     };
+    
   }
 
 }

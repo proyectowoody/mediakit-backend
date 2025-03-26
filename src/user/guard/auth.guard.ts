@@ -54,7 +54,7 @@ export class AuthGuard implements CanActivate {
   private validateRole(request: Request) {
     const user = (request as any).user;
 
-    const adminRoutes = ["/admin", "/categorias", "/subcategorias", "/proveedores", "/articulos", "/ofertas", "/cuenta-admin"];
+    const adminRoutes = ["/admin", "/categorias", "/subcategorias", "/proveedores", "/articulos", "/ofertas", "/cuenta-admin",'blog-admin','codigo-descuento'];
     const clientRoutes = ["/favoritos", "/carrito", "/comprar", "/direccion", "/comentarios", "/cuenta"];
 
     const path = request.path;
@@ -67,4 +67,5 @@ export class AuthGuard implements CanActivate {
       throw new ForbiddenException("Acceso denegado: No puedes acceder a rutas de administrador");
     }
   }
+  
 }

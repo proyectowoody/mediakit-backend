@@ -32,6 +32,28 @@ export class ArticleService {
     return data;
   }
 
+  async findAllPlus() {
+    const data = await this.articuloRepository.find({
+      relations: ['categoria', 'categoria.subcategorias', 'supplier', 'imagenes'],
+    });
+
+    return data;
+  }
+
+  async findOneById(id: number): Promise<Article> {
+    const article = await this.articuloRepository.findOne({
+      where: { id },
+      relations: ['categoria', 'categoria.subcategorias', 'supplier', 'imagenes'],
+    });
+
+    if (!article) {
+      throw new NotFoundException(`Artículo no encontrado`);
+    }
+
+    return article;
+  }
+
+
   async findAllOffers() {
     return this.articuloRepository.find({
       where: { offer: true },
@@ -151,7 +173,7 @@ export class ArticleService {
   ): Promise<{ message: string; articulo: Article }> {
 
     const articulo = await this.articuloRepository.findOne({ where: { id } });
-    
+
     if (!articulo) {
       throw new NotFoundException(`Artículo no encontrado`);
     }

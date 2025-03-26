@@ -19,6 +19,9 @@ import { SubcategoryModule } from './subcategory/subcategory.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CashModule } from './cash/cash.module';
 import { BlogModule } from './blog/blog.module';
+import { DiscountModule } from './discount/discount.module';
+import { CommentarticleModule } from './commentarticle/commentarticle.module';
+import { DatauserModule } from './datauser/datauser.module';
 import 'dotenv/config';
 
 @Module({
@@ -53,7 +56,10 @@ import 'dotenv/config';
     ContactModule,
     SubcategoryModule,
     CashModule,
-    BlogModule
+    BlogModule,
+    DiscountModule,
+    CommentarticleModule,
+    DatauserModule
   ],
 })
 export class AppModule { }

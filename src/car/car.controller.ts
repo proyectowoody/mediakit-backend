@@ -20,7 +20,14 @@ export class CarController {
   @UseGuards(AuthGuard)
   carPost(@Request() req, @Body() body: { articulo_id: number }) {
     const email = req.user.email;
-    return this.carService.create({articulo_id: body.articulo_id, email_user: email });
+    return this.carService.create({ articulo_id: body.articulo_id, email_user: email });
+  }
+
+  @Post('/descuento')
+  @UseGuards(AuthGuard)
+  carPostDiscount(@Request() req, @Body() body: { codigo:string }) {
+    const email = req.user.email;
+    return this.carService.UpdateCar({ codigo: body.codigo, email_user: email });
   }
 
   @Get('/count')
@@ -37,6 +44,14 @@ export class CarController {
   ): Promise<{ message: string }> {
     const email_user = req.user.email;
     return this.carService.remove(articulo_id, email_user);
+  }
+
+  @Delete('/all')
+  @UseGuards(AuthGuard)
+  async removeAll( @Request() req
+  ): Promise<{ message: string }> {
+    const email_user = req.user.email;
+    return this.carService.removeAll(email_user);
   }
 
   @Delete('me')

@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -218,6 +219,14 @@ export class UserService {
       authTag.toString('base64'),
       encrypted,
     ].join('.');
+  }
+
+  async deleteUserById(id: number) {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    await this.usersRepository.remove(user);
   }
 
 }

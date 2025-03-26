@@ -5,6 +5,7 @@ import { UserService } from 'src/user/user.service';
 import { Car } from './entities/car.entity';
 import { Repository } from 'typeorm';
 import { Cron } from '@nestjs/schedule';
+import { DiscountService } from 'src/discount/discount.service';
 
 @Injectable()
 export class CarService {
@@ -13,9 +14,41 @@ export class CarService {
     @InjectRepository(Car)
     private readonly carRepository: Repository<Car>,
     private readonly userService: UserService,
+    private readonly discoutService: DiscountService
   ) { }
 
-  async findOne(email: string): Promise<{ articles: any[]; total: number }> {
+  async UpdateCar(data: { codigo: string; email_user: string }) {
+
+    const { codigo, email_user } = data;
+
+    const descuento = await this.discoutService.findByCodigo(codigo);
+    if (!descuento) {
+      throw new Error('Código de descuento inválido');
+    }
+
+    const user = await this.userService.findByEmail(email_user);
+    if (!user) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    const carItems = await this.carRepository.find({
+      where: { user: { id: user.id } },
+      relations: ['user'],
+    });
+
+    if (carItems.length === 0) {
+      throw new Error('No hay artículos en el carrito');
+    }
+
+    for (const item of carItems) {
+      item.discount = descuento.descuento;
+      await this.carRepository.save(item);
+    }
+
+    return { message: 'Descuento aplicado correctamente', descuento: descuento.descuento };
+  }
+
+  async findOne(email: string): Promise<{ articles: any[]; total: number; descuentoAplicado: number }> {
     const user = await this.userService.findByEmail(email);
     const user_id = user.id;
 
@@ -25,12 +58,20 @@ export class CarService {
     });
 
     const groupedArticles = new Map<number, any>();
+    let total = 0;
+    let descuento = 0;
 
     cars.forEach(car => {
       const article = car.article;
       const articleId = article.id;
 
       const finalPrice = article.precioActual;
+
+      total += finalPrice;
+
+      if (car.discount && car.discount > 0 && descuento === 0) {
+        descuento = car.discount;
+      }
 
       if (!groupedArticles.has(articleId)) {
         groupedArticles.set(articleId, {
@@ -57,8 +98,15 @@ export class CarService {
     });
 
     const formattedCars = Array.from(groupedArticles.values());
-    const total = formattedCars.reduce((sum, car) => sum + car.subtotal, 0);
-    return { articles: formattedCars, total };
+
+    const montoDescontado = (total * descuento) / 100;
+    const totalConDescuento = total - montoDescontado;
+
+    return {
+      articles: formattedCars,
+      total: totalConDescuento,
+      descuentoAplicado: descuento,
+    };
   }
 
   async create(
@@ -185,7 +233,7 @@ export class CarService {
     return Array.from(groupedUsers.values());
   }
 
-  @Cron('0 * * * *')
+  @Cron('0 0 * * *')
   async handleAbandonedCarts() {
     const abandonedCarts = await this.findAbandonedCarts();
     const emails = abandonedCarts.map(cart => cart.userEmail);
@@ -220,7 +268,7 @@ export class CarService {
           article: { id: articulo_id },
           user: { id: user_id },
         },
-        order: { fecha: 'ASC' }, 
+        order: { fecha: 'ASC' },
       });
 
       if (!existingItem) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Delete, UseGuards, Query, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Delete, UseGuards, Query, Request, Param } from '@nestjs/common';
 import { FavoriteService } from './favorite.service';
 import { AuthGuard } from 'src/user/guard/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
@@ -19,8 +19,13 @@ export class FavoriteController {
   @Post()
   @UseGuards(AuthGuard)
   async create(@Request() req, @Body() body: { articulo_id: number }) {
-    const email = req.user.email; 
+    const email = req.user.email;
     return this.favoriteService.create({ articulo_id: body.articulo_id, email_user: email });
+  }
+
+  @Get('/count/:id')
+  async countFavoritos(@Param('id') id: number): Promise<{ total: number }> {
+    return this.favoriteService.countFavoritosByArticleId(id);
   }
 
   @Delete()
