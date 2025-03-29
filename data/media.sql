@@ -1,19 +1,20 @@
 
-DROP TABLE IF EXISTS discountmediakit;
-DROP TABLE IF EXISTS article_images;
+DROP TABLE IF EXISTS blog_images;
+DROP TABLE IF EXISTS commentarticlemediakit;
 DROP TABLE IF EXISTS detailbuymediakit;
 DROP TABLE IF EXISTS favoritemediakit;
-DROP TABLE IF EXISTS cashmediakit;
 DROP TABLE IF EXISTS carmediakit;
-DROP TABLE IF EXISTS commentmediakit;
+DROP TABLE IF EXISTS cashmediakit;
 DROP TABLE IF EXISTS addressmediakit;
 DROP TABLE IF EXISTS buymediakit;
-DROP TABLE IF EXISTS blog_images;
-DROP TABLE IF EXISTS blogmediakit;
+DROP TABLE IF EXISTS commentmediakit;
+DROP TABLE IF EXISTS article_images;
 DROP TABLE IF EXISTS articlemediakit;
 DROP TABLE IF EXISTS subcategorymediakit;
 DROP TABLE IF EXISTS categorymediakit;
 DROP TABLE IF EXISTS suppliersmediakit;
+DROP TABLE IF EXISTS discountmediakit;
+DROP TABLE IF EXISTS blogmediakit;
 DROP TABLE IF EXISTS datausermediakit;
 DROP TABLE IF EXISTS usermediakit;
 

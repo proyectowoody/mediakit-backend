@@ -10,13 +10,8 @@ export class ContactController {
 
   @Post()
   create(@Body() createContactDto: CreateContactDto) {
-    const { name, email, phone, city, subject, message } = createContactDto; 
-    return this.contactService.send({ name, email, phone, city, subject, message  });
-  }
-
-  @Post('suscribe')
-  sendCustomMessage(@Body() body: { email: string }) {
-    return this.contactService.sendCustom(body);
+    const { name, email, phone, city, subject, message } = createContactDto;
+    return this.contactService.send({ name, email, phone, city, subject, message });
   }
 
 }

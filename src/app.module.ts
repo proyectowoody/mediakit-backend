@@ -22,6 +22,7 @@ import { BlogModule } from './blog/blog.module';
 import { DiscountModule } from './discount/discount.module';
 import { CommentarticleModule } from './commentarticle/commentarticle.module';
 import { DatauserModule } from './datauser/datauser.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
 import 'dotenv/config';
 
 @Module({
@@ -59,7 +60,8 @@ import 'dotenv/config';
     BlogModule,
     DiscountModule,
     CommentarticleModule,
-    DatauserModule
+    DatauserModule,
+    NewsletterModule
   ],
 })
 export class AppModule { }
