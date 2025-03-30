@@ -11,7 +11,7 @@ import * as bcryptjs from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import * as path from 'path';
 import * as fs from 'fs';
-import { MailerService } from '@nestjs-modules/mailer';
+import { nodemailerTransport } from './mailer.config';
 import { LoginDto } from './dto/loginDto';
 import { EmailDto } from './dto/emailDto';
 import { PasswordDto } from './dto/passwordDto';
@@ -23,13 +23,11 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class UserService {
-
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
-    private readonly mailerService: MailerService,
-  ) { }
+  ) {}
 
   async count(): Promise<{ total: number }> {
     const total = await this.usersRepository.count();
@@ -109,11 +107,12 @@ export class UserService {
   }
 
   async email({ email }: EmailDto) {
-
     const user = await this.usersRepository.findOneBy({ email });
 
     if (!user) {
-      throw new BadRequestException('Correo enviado (si existe en la base de datos).');
+      throw new BadRequestException(
+        'Correo enviado (si existe en la base de datos).',
+      );
     }
 
     await this.envioEmail(user, email, 'verificacion');
@@ -134,9 +133,12 @@ export class UserService {
 
     const hashedNewPassword = await bcryptjs.hash(passDto.password, 10);
 
-    await this.usersRepository.update({ email }, { password: hashedNewPassword });
+    await this.usersRepository.update(
+      { email },
+      { password: hashedNewPassword },
+    );
 
-    return
+    return;
   }
 
   async token(email: string) {
@@ -163,7 +165,6 @@ export class UserService {
   }
 
   async envioEmail(user: any, email: string, correo: string) {
-
     const payload = { email: user.email };
 
     const token = await this.encryptToken(payload);
@@ -187,26 +188,24 @@ export class UserService {
     }
 
     const htmlTemplate = fs.readFileSync(filePath, 'utf8');
-    const personalizedHtml = htmlTemplate.replace('{{name}}', user.email).replace('{{token}}', url);
+    const personalizedHtml = htmlTemplate
+      .replace('{{name}}', user.email)
+      .replace('{{token}}', url);
 
-    await this.mailerService.sendMail({
+    await nodemailerTransport.sendMail({
       to: email,
       subject: 'Correo de verificación',
       html: personalizedHtml,
     });
-
   }
 
   async encryptToken(payload: object): Promise<string> {
     const secret = process.env.JWT_SECRET;
     if (!secret) throw new Error('JWT_SECRET no definido');
 
-    const key = crypto
-      .createHash('sha256')
-      .update(secret)
-      .digest();
+    const key = crypto.createHash('sha256').update(secret).digest();
 
-    const iv = crypto.randomBytes(16); 
+    const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
 
     const json = JSON.stringify(payload);
@@ -214,11 +213,9 @@ export class UserService {
     encrypted += cipher.final('base64');
     const authTag = cipher.getAuthTag();
 
-    return [
-      iv.toString('base64'),
-      authTag.toString('base64'),
-      encrypted,
-    ].join('.');
+    return [iv.toString('base64'), authTag.toString('base64'), encrypted].join(
+      '.',
+    );
   }
 
   async deleteUserById(id: number) {
@@ -228,5 +225,4 @@ export class UserService {
     }
     await this.usersRepository.remove(user);
   }
-
 }

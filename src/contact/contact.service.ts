@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import * as path from 'path';
 import * as fs from 'fs';
-import { MailerService } from '@nestjs-modules/mailer';
+import { nodemailerTransport } from '../user/mailer.config';
 import 'dotenv/config';
 
 interface ContactData {
@@ -15,13 +15,9 @@ interface ContactData {
 
 @Injectable()
 export class ContactService {
-
-  constructor(
-    private readonly mailerService: MailerService,
-  ) { }
+  constructor() {}
 
   async send({ name, email, phone, city, subject, message }: ContactData) {
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/i;
 
     if (!emailRegex.test(email)) {
@@ -36,13 +32,9 @@ export class ContactService {
   }
 
   async envioEmail(name, email, phone, city, subject, message) {
-
     let filePath: string;
 
-    filePath = path.resolve(
-      process.cwd(),
-      'src/contact/plantillaMessage.html',
-    );
+    filePath = path.resolve(process.cwd(), 'src/contact/plantillaMessage.html');
 
     const htmlTemplate = fs.readFileSync(filePath, 'utf8');
     const personalizedHtml = htmlTemplate
@@ -51,13 +43,12 @@ export class ContactService {
       .replace('{{phone}}', phone)
       .replace('{{city}}', city)
       .replace('{{subject}}', subject)
-      .replace('{{message}}', message)
+      .replace('{{message}}', message);
 
-    await this.mailerService.sendMail({
+    await nodemailerTransport.sendMail({
       to: process.env.GMAIL_USER,
       subject: 'Correo de respectful-shoes',
       html: personalizedHtml,
     });
   }
-
 }
